@@ -10,115 +10,50 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CatalogController extends Controller
 {
-    public function tires()
-    {
-        $response = DB::table('channels')->select('carriers')->get();
-        echo '<pre>';
-        print_r($response);
-        die;
-        ini_set('max_execution_time', 500);
-   
-        return new StreamedResponse(function () {
-            $pageSize = 200; // Number of records to process per chunk
-            $offset = 0;
-            $totalRecords = DB::table('catalog')
-                ->where('category', 2)
-                ->count();
+    public function tires(Request $request)
+    { 
+      
+        // Check if any of the parameters exist in the request
+        if (!$request->has('size_dimensions') && !$request->has('brand') && !$request->has('mspn')) {
+            return response()->json(['error' => 'At least one parameter of size, brand, or sku is required.'], 400);
+        }
 
-            $responseCallback = function () use ($pageSize, &$offset) {
-                $data = DB::table('catalog')
-                    ->where('category', 1)
-                    ->orderBy('id')
-                    ->offset($offset)
-                    ->limit($pageSize)
-                    ->get();
-
-                $catalogResource = CatalogResource::collection($data);
-                echo $catalogResource->toResponse(request())->getContent();
-
-                $offset += $pageSize;
-            };
-
-            while (true) {
-                $responseCallback();
-                ob_flush();
-                flush();
-
-                if ($offset >= $totalRecords) { // Determine the total number of records
-                    break;
-                }
-            }
-        });
-    }
-
-    public function tiresBySize(Request $request)
-    {
         $data = DB::table('catalog')
-        ->where(['category' => 1, 'full_size' => $request->full_size])
-        // ->select('id','unq_id','category')
-        ->get();
+            ->where('category', 1)
+            ->when($request->has('size_dimensions'), function ($query) use ($request) {
+                $query->where('size_dimensions', $request->size_dimensions);
+            })
+            ->when($request->has('brand'), function ($query) use ($request) {
+                $query->where('brand', $request->brand);
+            })
+            ->when($request->has('mspn'), function ($query) use ($request) {
+                $query->where('mspn', $request->mspn);
+            })
+            ->get();
 
         return CatalogResource::collection($data);
     }
-    public function tiresByBrand(Request $request)
+
+    public function wheels(Request $request)
     {
+         // Check if any of the parameters exist in the request
+         if (!$request->has('size_dimensions') && !$request->has('brand') && !$request->has('mspn')) {
+            return response()->json(['error' => 'At least one parameter of size, brand, or sku is required.'], 400);
+        }
+
         $data = DB::table('catalog')
-        ->where(['category' => 1, 'brand' => $request->brand]) 
-        // ->select('id','unq_id','category')
-        ->get();
+            ->where('category', 2)
+            ->when($request->has('size_dimensions'), function ($query) use ($request) {
+                $query->where('size_dimensions', $request->size_dimensions);
+            })
+            ->when($request->has('brand'), function ($query) use ($request) {
+                $query->where('brand', $request->brand);
+            })
+            ->when($request->has('mspn'), function ($query) use ($request) {
+                $query->where('mspn', $request->mspn);
+            })
+            ->get();
 
-        return CatalogResource::collection($data);
-    }
-    public function wheels()
-    {
-        return new StreamedResponse(function () {
-            $pageSize = 200; // Number of records to process per chunk
-            $offset = 0;
-            $totalRecords = DB::table('catalog')
-                ->where('category', 2)
-                ->count();
-
-            $responseCallback = function () use ($pageSize, &$offset) {
-                $data = DB::table('catalog')
-                    ->where('category', 2)
-                    ->orderBy('id')
-                    ->offset($offset)
-                    ->limit($pageSize)
-                    ->get();
-
-                $catalogResource = CatalogResource::collection($data);
-                echo $catalogResource->toResponse(request())->getContent();
-
-                $offset += $pageSize;
-            };
-
-            while (true) {
-                $responseCallback();
-                ob_flush();
-                flush();
-
-                if ($offset >= $totalRecords) { // Determine the total number of records
-                    break;
-                }
-            }
-        });
-    }
-
-    public function wheelsBySize(Request $request)
-    {
-        $data = DB::table('catalog')
-        ->where(['category' => 2, 'size_dimensions' => $request->size_dimensions])
-        // ->select('id','unq_id','category')
-        ->get();
-
-        return CatalogResource::collection($data);
-    }
-    public function wheelsByBrand(Request $request)
-    {
-        $data = DB::table('catalog')
-        ->where(['category' => 2, 'brand' => $request->brand])
-        // ->select('id','unq_id','category')
-        ->get();
 
         return CatalogResource::collection($data);
     }
