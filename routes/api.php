@@ -16,10 +16,13 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::prefix('v1/catalog')->group(function(){
-    // GET TIRES
-    Route::get('tires', [CatalogController::class,'tires']);
-    // GET WHEELS
-    Route::get('wheels', [CatalogController::class,'wheels']);
+    // GET TIRE BRANDS
+    Route::get('tires/brands', [CatalogController::class,'tireBrand']);
+    // GET WHEEL BRANDS
+    Route::get('wheels/brands', [CatalogController::class,'wheelBrand']);
+    // GET CATALOGS BASE ON PARAMETER
+    Route::get('',[CatalogController::class, 'getCatalog']);
+
 
 });
 
