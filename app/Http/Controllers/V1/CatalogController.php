@@ -12,30 +12,30 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CatalogController extends Controller
 {
-    public function tireBrand()
+    public function getTiresByBrand(Request $request)
     {
         $data = DB::connection('tire_connect_api')
             ->table('catalog')
-            ->where('category', 1)
-            ->selectRaw('MAX(brand_id) AS brand_id, COALESCE(brand, "") AS brand')
-            ->groupBy('brand')
+            ->where(['category' => 1, 'brand' => $request->brand, 'mspn' => $request->mspn])
+            // ->selectRaw('MAX(brand_id) AS brand_id, COALESCE(brand, "") AS brand')
+            // ->groupBy('brand')
             ->get();
         return response()->json(['data' => $data]);
     }
 
-    public function wheelBrand()
+    public function getWheelsByBrand(Request $request)
     {
         $data = DB::connection('tire_connect_api')
             ->table('catalog')
-            ->where('category', 2)
-            ->selectRaw('MAX(brand_id) AS brand_id, COALESCE(brand, "") AS brand')
-            ->groupBy('brand')
+            ->where(['category' => 2, 'brand' => $request->brand])
+            // ->selectRaw('MAX(brand_id) AS brand_id, COALESCE(brand, "") AS brand')
+            // ->groupBy('brand')
             ->get();
         return response()->json(['data' => $data]);
     }
 
  
-    // 000P-51061-12
+    
     public function getCatalog(Request $request)
     {
         if (!$request->has('brand') && !$request->has('mspn')) {
