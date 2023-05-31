@@ -23,6 +23,9 @@ Route::prefix('v1/catalog')->group(function(){
     // GET CATALOGS BASE ON PARAMETER
     Route::get('',[CatalogController::class, 'getCatalog']);
 
+    // GET INVENTORY/Price by location
+    Route::get('inventory', [CatalogController::class, 'tireInventoryPrice']);
+
 
 });
 

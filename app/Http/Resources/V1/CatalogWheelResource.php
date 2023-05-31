@@ -14,7 +14,11 @@ class CatalogWheelResource extends JsonResource
      */
     public function toArray($request)
     {
-        return [
+        return 
+        [
+            // 'location' => [
+
+            // ],
             'id' => $this->id,
             'unq_id' => $this->unq_id,
             'category' => $this->category,
