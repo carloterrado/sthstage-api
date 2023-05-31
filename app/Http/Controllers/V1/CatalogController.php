@@ -108,25 +108,14 @@ class CatalogController extends Controller
         if($request->has('part_number')) {
             $data = DB::connection('tire_connect_api')
             ->table('inventory_feed AS i')
-            ->select('v.id', 
-            'v.short_code', 
-            'v.name', 
-            'v.email', 
-            'v.vast_vendor_number', 
-            'i.store_location_id',
-            's.addr', 
-            's.city', 
-            's.state',
-            's.zip_code',
-            's.lat',
-            's.lon',
-            's.phone',
-            's.cut_off'
-            )
+            ->select('v.id', 'v.short_code', 'v.name', 'v.email')
+            ->selectRaw('GROUP_CONCAT(CONCAT_WS(" ", v.name, s.city, s.state)) AS store_locations')
             ->join('vendor_main AS v', 'v.id', '=', 'i.vendor_main_id')
             ->join('store_location AS s', 's.id', '=', 'i.store_location_id')
             ->where('i.part_number', '=', $request->get('part_number'))
+            ->groupBy('v.id', 'v.short_code', 'v.name', 'v.email')
             ->get();
+
 
             return CatalogVendorLocationResource::collection($data);
         }else {
