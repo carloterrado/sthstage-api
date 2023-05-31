@@ -103,7 +103,7 @@ class CatalogController extends Controller
 
 
 
-    public function tireLocation(Request $request){
+    public function getLocation(Request $request){
         //kuha partnumber sa inventory feed
         if($request->has('part_number')) {
             $data = DB::connection('tire_connect_api')
