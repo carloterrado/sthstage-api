@@ -97,32 +97,20 @@ class CatalogController extends Controller
         ], 400);
     }
 
-    public function getLocation(Request $request)
-    {
+
+    public function getLocation(Request $request){
         //kuha partnumber sa inventory feed
         if ($request->has('part_number')) {
             $data = DB::connection('tire_connect_api')
-                ->table('inventory_feed AS i')
-                ->select(
-                    'v.id',
-                    'v.short_code',
-                    'v.name',
-                    'v.email',
-                    'v.vast_vendor_number',
-                    'i.store_location_id',
-                    's.addr',
-                    's.city',
-                    's.state',
-                    's.zip_code',
-                    's.lat',
-                    's.lon',
-                    's.phone',
-                    's.cut_off'
-                )
-                ->join('vendor_main AS v', 'v.id', '=', 'i.vendor_main_id')
-                ->join('store_location AS s', 's.id', '=', 'i.store_location_id')
-                ->where('i.part_number', '=', $request->get('part_number'))
-                ->get();
+            ->table('inventory_feed AS i')
+            ->select('v.id', 'v.short_code', 'v.name', 'v.email')
+            ->selectRaw('GROUP_CONCAT(CONCAT_WS(" ", v.name, s.city, s.state)) AS store_locations')
+            ->join('vendor_main AS v', 'v.id', '=', 'i.vendor_main_id')
+            ->join('store_location AS s', 's.id', '=', 'i.store_location_id')
+            ->where('i.part_number', '=', $request->get('part_number'))
+            ->groupBy('v.id', 'v.short_code', 'v.name', 'v.email')
+            ->get();
+
 
             return CatalogVendorLocationResource::collection($data);
         } else {
@@ -131,13 +119,23 @@ class CatalogController extends Controller
                 'message' => 'At least one parameter of brand or mspn is required.'
             ], 400);
         }
+    }
 
 
-        //api/v1/catalog/tires/location?part_number={part_number} 
-        //hanapin yung vendor main id sa vendor main tas kunin yung id, name, email, vast vendor
+    
+    public function getVehicleYear(Request $request){
+
+        $requestYear = [
+            'YearMin' => $request->YearMin,
+            'YearMax' => $request->YearMax
+        ];
 
 
-        //hanapin yung vendor main id sa store location
+        $response = Http::withHeaders(['Content-Type' => 'application/json'])
+        ->post("https://api.ridestyler.net/Vehicle/GetYears?Token=" . $this->vehicleToken, $requestYear)
+        ->json();
+
+        return $response;
     }
     public function getVehicleByMakes(Request $request)
     {
