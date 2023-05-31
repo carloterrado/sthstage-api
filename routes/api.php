@@ -22,10 +22,17 @@ Route::prefix('v1/catalog')->group(function(){
     Route::get('wheels/brands', [CatalogController::class,'wheelBrand']);
     // GET CATALOGS BASE ON PARAMETER
     Route::get('',[CatalogController::class, 'getCatalog']);
-
-
+    //GET location
+    Route::get('tires/locations', [CatalogController::class, 'tireLocation']);
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+
+
+// request
+// api/v1/catalog/tires/location
+
+// response
