@@ -18,9 +18,7 @@ class CatalogController extends Controller
     {
         if ((!$request->has('wheel_diameter') && !$request->has('wheel_width')) && ($request->has('brand') || $request->has('mspn'))) {
             $data = DB::connection('tire_connect_api')->table('catalog')
-                ->where([
-                    'category' => 2,
-                ])
+                ->where(['category' => 2])
                 ->when($request->has('brand'), function ($query) use ($request) {
                     $query->where('brand', $request->brand);
                 })
@@ -32,10 +30,9 @@ class CatalogController extends Controller
             return CatalogWheelResource::collection($data);
         }
 
-        if (($request->has('wheel_diameter') && $request->has('wheel_width')) && (!$request->has('brand') || !$request->has('mspn'))) {
+        if ($request->has('wheel_diameter') && $request->has('wheel_width')) {
             $data = DB::connection('tire_connect_api')->table('catalog')
                 ->where([
-                    'category' => 2,
                     'wheel_diameter' => $request->wheel_diameter,
                     'wheel_width' => $request->wheel_width,
                 ])
@@ -68,10 +65,10 @@ class CatalogController extends Controller
                 $query->where('mspn', $request->mspn);
             })
             ->get();
-        return response()->json(['data' => $data]);
+            return CatalogTireResource::collection($data);
         }
 
-        if($request->has('section_width') && $request->has('aspect_ratio') && $request->has('rim_diameter')){
+        if($request->has('section_width') && $request->has('aspect_ratio') && $request->has('rim_diameter')  ){
             $data = DB::connection('tire_connect_api')->table('catalog')
                 ->where([
                     'section_width' => $request->section_width,
@@ -88,17 +85,12 @@ class CatalogController extends Controller
             return CatalogTireResource::collection($data);
         }
 
-        if(!$request->has('brand') && !$request->has('mspn') && !$request->has('section_width') && !$request->has('aspect_ratio') && !$request->has('rim_diameter')){
+      
             return response()->json([
                 'error' => 'Missing Parameter',
-                'message' => 'Required parameters'
+            'message' => 'The required parameters for tires are missing in the request.'
             ], 400);
-        }else{
-            return response()->json([
-                'error' => 'Missing Parameter',
-                'message' => 'Missing size parameters'
-            ], 400);
-        }
+        
     }
 
 
