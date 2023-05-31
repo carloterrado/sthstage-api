@@ -9,6 +9,7 @@ use App\Http\Resources\V1\CatalogVendorLocationResource;
 use App\Http\Resources\V1\CatalogWheelResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CatalogController extends Controller
@@ -102,7 +103,6 @@ class CatalogController extends Controller
     }
 
 
-
     public function getLocation(Request $request){
         //kuha partnumber sa inventory feed
         if($request->has('part_number')) {
@@ -124,12 +124,22 @@ class CatalogController extends Controller
                 'message' => 'At least one parameter of brand or mspn is required.'
             ], 400);
         }
+    }
 
 
-        //api/v1/catalog/tires/location?part_number={part_number} 
-        //hanapin yung vendor main id sa vendor main tas kunin yung id, name, email, vast vendor
+    
+    public function getVehicleYear(Request $request){
+
+        $requestYear = [
+            'YearMin' => $request->YearMin,
+            'YearMax' => $request->YearMax
+        ];
 
 
-        //hanapin yung vendor main id sa store location
+        $response = Http::withHeaders(['Content-Type' => 'application/json'])
+        ->post("https://api.ridestyler.net/Vehicle/GetYears?Token=bdd7a30c-7c2e-4982-a236-fa37e0e6dede", $requestYear)
+        ->json();
+
+        return $response;
     }
 }

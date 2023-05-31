@@ -25,6 +25,8 @@ Route::prefix('v1/catalog')->group(function () {
     Route::get('wheels', [CatalogController::class, 'getWheels']);
     //GET location
     Route::get('locations', [CatalogController::class, 'getLocation']);
+    //Vehicle Price
+    Route::get('vehicle/years', [CatalogController::class, 'getVehicleYear']);
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
