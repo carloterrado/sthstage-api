@@ -24,7 +24,7 @@ Route::prefix('v1/catalog')->group(function () {
     // GET WHEELS BY BRAND || SKU || SIZE
     Route::get('wheels', [CatalogController::class, 'getWheels']);
     //GET location
-    Route::get('tires/locations', [CatalogController::class, 'tireLocation']);
+    Route::get('locations', [CatalogController::class, 'getLocation']);
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
