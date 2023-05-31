@@ -25,6 +25,9 @@ Route::prefix('v1/catalog')->group(function () {
     Route::get('wheels', [CatalogController::class, 'getWheels']);
     //GET location
     Route::get('locations', [CatalogController::class, 'getLocation']);
+     // GET INVENTORY/Price by location
+     Route::get('inventory', [CatalogController::class, 'inventoryPrice']);
+
     
 });
 

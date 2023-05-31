@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\V1\CatalogInventoryPriceResource;
 use App\Http\Resources\V1\CatalogResource;
 use App\Http\Resources\V1\CatalogTireResource;
 use App\Http\Resources\V1\CatalogVendorLocationResource;
@@ -13,7 +14,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CatalogController extends Controller
 {
-   
+
     public function getWheels(Request $request)
     {
         if ((!$request->has('wheel_diameter') && !$request->has('wheel_width')) && ($request->has('brand') || $request->has('mspn'))) {
@@ -54,21 +55,21 @@ class CatalogController extends Controller
 
     public function getTires(Request $request)
     {
-        if((!$request->has('section_width') && !$request->has('aspect_ratio') && !$request->has('rim_diameter')) && ($request->has('brand') || $request->has('mspn'))){
+        if ((!$request->has('section_width') && !$request->has('aspect_ratio') && !$request->has('rim_diameter')) && ($request->has('brand') || $request->has('mspn'))) {
             $data = DB::connection('tire_connect_api')
-            ->table('catalog')
-            ->where(['category' => 1])
-            ->when($request->has('brand'), function ($query) use ($request) {
-                $query->where('brand', $request->brand);
-            })
-            ->when($request->has('mspn'), function ($query) use ($request) {
-                $query->where('mspn', $request->mspn);
-            })
-            ->get();
+                ->table('catalog')
+                ->where(['category' => 1])
+                ->when($request->has('brand'), function ($query) use ($request) {
+                    $query->where('brand', $request->brand);
+                })
+                ->when($request->has('mspn'), function ($query) use ($request) {
+                    $query->where('mspn', $request->mspn);
+                })
+                ->get();
             return CatalogTireResource::collection($data);
         }
 
-        if($request->has('section_width') && $request->has('aspect_ratio') && $request->has('rim_diameter')  ){
+        if ($request->has('section_width') && $request->has('aspect_ratio') && $request->has('rim_diameter')) {
             $data = DB::connection('tire_connect_api')->table('catalog')
                 ->where([
                     'section_width' => $request->section_width,
@@ -85,43 +86,89 @@ class CatalogController extends Controller
             return CatalogTireResource::collection($data);
         }
 
-      
+
+        return response()->json([
+            'error' => 'Missing Parameter',
+            'message' => 'The required parameters for tires are missing in the request.'
+        ], 400);
+    }
+
+    //Get inventory price location
+    public function inventoryPrice(Request $request)
+    {
+        if (!$request->has('brand') && !$request->has('mspn')) {
             return response()->json([
                 'error' => 'Missing Parameter',
-            'message' => 'The required parameters for tires are missing in the request.'
+                'message' => 'At least one parameter of brand or mspn is required.'
             ], 400);
-        
+        }
+
+
+        if ($request->has('brand') || $request->has('mspn')) {
+
+            $data = DB::connection('tire_connect_api')
+                ->table('inventory_feed AS i')
+                ->when($request->has('brand'), function ($query) use ($request) {
+                    $query->where('n.brand', $request->brand);
+                })
+                ->select(
+                    'n.id',
+                    'n.brand',
+                    'n.mspn',
+                    'n.vendor',
+                    'v.name',
+                    'n.netnet',
+                    'i.qty',
+                )
+
+                ->when($request->has('mspn'), function ($query) use ($request) {
+                    $query->where('n.mspn', $request->mspn);
+                })
+                ->join('netnet_price AS n', 'n.mspn', '=', 'i.part_number')
+                ->join('vendor_main AS v', 'v.id', '=',  'n.vendor')
+                ->distinct()
+                ->get();
+
+            // return $data;
+            return CatalogInventoryPriceResource::collection($data);
+        }
+
+
+
+        // return response()->json(['data' => $data]);
     }
 
 
 
-    public function getLocation(Request $request){
+    public function getLocation(Request $request)
+    {
         //kuha partnumber sa inventory feed
-        if($request->has('part_number')) {
+        if ($request->has('part_number')) {
             $data = DB::connection('tire_connect_api')
-            ->table('inventory_feed AS i')
-            ->select('v.id', 
-            'v.short_code', 
-            'v.name', 
-            'v.email', 
-            'v.vast_vendor_number', 
-            'i.store_location_id',
-            's.addr', 
-            's.city', 
-            's.state',
-            's.zip_code',
-            's.lat',
-            's.lon',
-            's.phone',
-            's.cut_off'
-            )
-            ->join('vendor_main AS v', 'v.id', '=', 'i.vendor_main_id')
-            ->join('store_location AS s', 's.id', '=', 'i.store_location_id')
-            ->where('i.part_number', '=', $request->get('part_number'))
-            ->get();
+                ->table('inventory_feed AS i')
+                ->select(
+                    'v.id',
+                    'v.short_code',
+                    'v.name',
+                    'v.email',
+                    'v.vast_vendor_number',
+                    'i.store_location_id',
+                    's.addr',
+                    's.city',
+                    's.state',
+                    's.zip_code',
+                    's.lat',
+                    's.lon',
+                    's.phone',
+                    's.cut_off'
+                )
+                ->join('vendor_main AS v', 'v.id', '=', 'i.vendor_main_id')
+                ->join('store_location AS s', 's.id', '=', 'i.store_location_id')
+                ->where('i.part_number', '=', $request->get('part_number'))
+                ->get();
 
             return CatalogVendorLocationResource::collection($data);
-        }else {
+        } else {
             return response()->json([
                 'error' => 'Missing Parameter',
                 'message' => 'At least one parameter of brand or mspn is required.'
