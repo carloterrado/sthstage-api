@@ -14,7 +14,11 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CatalogController extends Controller
 {
-
+    protected $vehicleToken;
+    public function __construct()
+    {
+        $this->vehicleToken = "bdd7a30c-7c2e-4982-a236-fa37e0e6dede";
+    } 
     public function getWheels(Request $request)
     {
         if ((!$request->has('wheel_diameter') && !$request->has('wheel_width')) && ($request->has('brand') || $request->has('mspn'))) {
@@ -137,7 +141,7 @@ class CatalogController extends Controller
     }
     public function getVehicleByMakes(Request $request)
     {
-
+      
         // $token = "bdd7a30c-7c2e-4982-a236-fa37e0e6dede";
 
         $requestYear = [
@@ -146,7 +150,7 @@ class CatalogController extends Controller
         ];
 
         $response = Http::withHeaders(['Content-Type' => 'application/json'])
-            ->post("https://api.ridestyler.net/Vehicle/GetMakes?Token=" . $request->token, $requestYear);
+            ->post("https://api.ridestyler.net/Vehicle/GetMakes?Token=" . $this->vehicleToken, $requestYear);
 
         return $responseData = $response->json();
 
@@ -160,7 +164,7 @@ class CatalogController extends Controller
 
     public function getVehicleByModels(Request $request)
     {
-
+      
         // $token = "bdd7a30c-7c2e-4982-a236-fa37e0e6dede";
 
         $requestYear = [
@@ -170,24 +174,15 @@ class CatalogController extends Controller
         ];
 
         $response = Http::withHeaders(['Content-Type' => 'application/json'])
-            ->post("https://api.ridestyler.net/Vehicle/GetModels?Token=" . $request->token, $requestYear);
+            ->post("https://api.ridestyler.net/Vehicle/GetModels?Token=" . $this->vehicleToken, $requestYear);
 
         return $responseData = $response->json();
 
         $makeNames = array_map(function ($make) {
             return ['VehicleMakeName' => $make['VehicleMakeName']];
         }, $responseData['Makes']);
-
+        
         return response()->json(['Makes' => $makeNames]);
-    }
-
-    public function getVehicleOption(Request $request)
-    {
-
-        $requestOption = [
-            'Year' => $request->Year,
-            'VehicleModel' => $request->VehicleModel
-        ];
 
            return Http::withHeaders(['Content-Type' => 'application/json'])
                 ->post("https://api.ridestyler.net/Vehicle/GetConfigurations?Token=" . $request->token, $requestOption)->json();
