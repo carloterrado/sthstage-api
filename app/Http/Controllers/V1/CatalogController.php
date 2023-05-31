@@ -13,40 +13,65 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CatalogController extends Controller
 {
-    public function tireBrand()
+   
+    public function getWheels(Request $request)
     {
-        $data = DB::connection('tire_connect_api')
-            ->table('catalog')
-            ->where('category', 1)
-            ->selectRaw('MAX(brand_id) AS brand_id, COALESCE(brand, "") AS brand')
-            ->groupBy('brand')
-            ->get();
-        return response()->json(['data' => $data]);
-    }
+        if ((!$request->has('wheel_diameter') && !$request->has('wheel_width')) && ($request->has('brand') || $request->has('mspn'))) {
+            $data = DB::connection('tire_connect_api')->table('catalog')
+                ->where([
+                    'category' => 2,
+                ])
+                ->when($request->has('brand'), function ($query) use ($request) {
+                    $query->where('brand', $request->brand);
+                })
+                ->when($request->has('mspn'), function ($query) use ($request) {
+                    $query->where('mspn', $request->mspn);
+                })
+                ->get();
 
-    public function wheelBrand()
-    {
-        $data = DB::connection('tire_connect_api')
-            ->table('catalog')
-            ->where('category', 2)
-            ->selectRaw('MAX(brand_id) AS brand_id, COALESCE(brand, "") AS brand')
-            ->groupBy('brand')
-            ->get();
-        return response()->json(['data' => $data]);
-    }
-
- 
-    // 000P-51061-12
-    public function getCatalog(Request $request)
-    {
-        if (!$request->has('brand') && !$request->has('mspn')) {
-            return response()->json([
-                'error' => 'Missing Parameter',
-                'message' => 'At least one parameter of brand or mspn is required.'
-            ], 400);
+            return CatalogWheelResource::collection($data);
         }
 
-        if ($request->has('section_width') && $request->has('aspect_ratio') && $request->has('rim_diameter')) {
+        if (($request->has('wheel_diameter') && $request->has('wheel_width')) && (!$request->has('brand') || !$request->has('mspn'))) {
+            $data = DB::connection('tire_connect_api')->table('catalog')
+                ->where([
+                    'category' => 2,
+                    'wheel_diameter' => $request->wheel_diameter,
+                    'wheel_width' => $request->wheel_width,
+                ])
+                ->when($request->has('brand'), function ($query) use ($request) {
+                    $query->where('brand', $request->brand);
+                })
+                ->when($request->has('mspn'), function ($query) use ($request) {
+                    $query->where('mspn', $request->mspn);
+                })
+                ->get();
+            return CatalogWheelResource::collection($data);
+        }
+
+        return response()->json([
+            'error' => 'Missing Parameter',
+            'message' => 'The required parameters for wheels are missing in the request.'
+        ], 400);
+    }
+
+    public function getTires(Request $request)
+    {
+        if((!$request->has('section_width') && !$request->has('aspect_ratio') && !$request->has('rim_diameter')) && ($request->has('brand') || $request->has('mspn'))){
+            $data = DB::connection('tire_connect_api')
+            ->table('catalog')
+            ->where(['category' => 1])
+            ->when($request->has('brand'), function ($query) use ($request) {
+                $query->where('brand', $request->brand);
+            })
+            ->when($request->has('mspn'), function ($query) use ($request) {
+                $query->where('mspn', $request->mspn);
+            })
+            ->get();
+        return response()->json(['data' => $data]);
+        }
+
+        if($request->has('section_width') && $request->has('aspect_ratio') && $request->has('rim_diameter')){
             $data = DB::connection('tire_connect_api')->table('catalog')
                 ->where([
                     'section_width' => $request->section_width,
@@ -63,26 +88,15 @@ class CatalogController extends Controller
             return CatalogTireResource::collection($data);
         }
 
-        if ($request->has('wheel_diameter') && $request->has('wheel_width')) {
-            $data = DB::connection('tire_connect_api')->table('catalog')
-                ->where([
-                    'wheel_diameter' => $request->wheel_diameter,
-                    'wheel_width' => $request->wheel_width
-                ])
-                ->when($request->has('brand'), function ($query) use ($request) {
-                    $query->where('brand', $request->brand);
-                })
-                ->when($request->has('mspn'), function ($query) use ($request) {
-                    $query->where('mspn', $request->mspn);
-                })
-                ->get();
-            return CatalogWheelResource::collection($data);
-        }
-
-        if ((!$request->has('wheel_diameter') || !$request->has('wheel_width')) || (!$request->has('section_width') || !$request->has('aspect_ratio') || !$request->has('rim_diameter'))) {
+        if(!$request->has('brand') && !$request->has('mspn') && !$request->has('section_width') && !$request->has('aspect_ratio') && !$request->has('rim_diameter')){
             return response()->json([
                 'error' => 'Missing Parameter',
-                'message' => 'Required size parameters'
+                'message' => 'Required parameters'
+            ], 400);
+        }else{
+            return response()->json([
+                'error' => 'Missing Parameter',
+                'message' => 'Missing size parameters'
             ], 400);
         }
     }

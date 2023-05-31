@@ -15,13 +15,14 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::prefix('v1/catalog')->group(function(){
-    // GET TIRE BRANDS
-    Route::get('tires/brands', [CatalogController::class,'tireBrand']);
-    // GET WHEEL BRANDS
-    Route::get('wheels/brands', [CatalogController::class,'wheelBrand']);
-    // GET CATALOGS BASE ON PARAMETER
-    Route::get('',[CatalogController::class, 'getCatalog']);
+
+// url/api/v1/catalog/tires/brands
+Route::prefix('v1/catalog')->group(function () {
+
+    // GET TIRES BY BRAND || SKU || SIZE
+    Route::get('tires', [CatalogController::class, 'getTires']);
+    // GET WHEELS BY BRAND || SKU || SIZE
+    Route::get('wheels', [CatalogController::class, 'getWheels']);
     //GET location
     Route::get('tires/locations', [CatalogController::class, 'tireLocation']);
 });
