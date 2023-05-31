@@ -15,12 +15,18 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::prefix('v1/catalog')->group(function(){
-   
-    // GET WHEELS BY SIZE / MSPN / BRAND
-    Route::get('wheels',[CatalogController::class, 'getWheels']);
 
 
+
+
+
+// url/api/v1/catalog/tires/brands
+Route::prefix('v1/catalog')->group(function () {
+
+    // GET TIRES BY BRAND || SKU || SIZE
+    Route::get('tires', [CatalogController::class, 'getTires']);
+    // GET WHEELS BY BRAND || SKU || SIZE
+    Route::get('wheels', [CatalogController::class, 'getWheels']);
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {

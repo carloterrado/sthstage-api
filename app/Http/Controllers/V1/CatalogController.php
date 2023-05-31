@@ -13,8 +13,6 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class CatalogController extends Controller
 {
    
-
-
     public function getWheels(Request $request)
     {
         if ((!$request->has('wheel_diameter') && !$request->has('wheel_width')) && ($request->has('brand') || $request->has('mspn'))) {
@@ -56,9 +54,49 @@ class CatalogController extends Controller
         ], 400);
     }
 
+    public function getTires(Request $request)
+    {
+        if((!$request->has('section_width') && !$request->has('aspect_ratio') && !$request->has('rim_diameter')) && ($request->has('brand') || $request->has('mspn'))){
+            $data = DB::connection('tire_connect_api')
+            ->table('catalog')
+            ->where(['category' => 1])
+            ->when($request->has('brand'), function ($query) use ($request) {
+                $query->where('brand', $request->brand);
+            })
+            ->when($request->has('mspn'), function ($query) use ($request) {
+                $query->where('mspn', $request->mspn);
+            })
+            ->get();
+        return response()->json(['data' => $data]);
+        }
 
-    
+        if($request->has('section_width') && $request->has('aspect_ratio') && $request->has('rim_diameter')){
+            $data = DB::connection('tire_connect_api')->table('catalog')
+                ->where([
+                    'section_width' => $request->section_width,
+                    'aspect_ratio' => $request->aspect_ratio,
+                    'rim_diameter' => $request->rim_diameter
+                ])
+                ->when($request->has('brand'), function ($query) use ($request) {
+                    $query->where('brand', $request->brand);
+                })
+                ->when($request->has('mspn'), function ($query) use ($request) {
+                    $query->where('mspn', $request->mspn);
+                })
+                ->get();
+            return CatalogTireResource::collection($data);
+        }
 
-
-
+        if(!$request->has('brand') && !$request->has('mspn') && !$request->has('section_width') && !$request->has('aspect_ratio') && !$request->has('rim_diameter')){
+            return response()->json([
+                'error' => 'Missing Parameter',
+                'message' => 'Required parameters'
+            ], 400);
+        }else{
+            return response()->json([
+                'error' => 'Missing Parameter',
+                'message' => 'Missing size parameters'
+            ], 400);
+        }
+    }
 }
