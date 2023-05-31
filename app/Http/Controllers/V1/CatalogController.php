@@ -96,10 +96,10 @@ class CatalogController extends Controller
     //Get inventory price location
     public function inventoryPrice(Request $request)
     {
-        if (!$request->has('brand') && !$request->has('mspn')) {
+        if (!$request->has('mspn')) {
             return response()->json([
                 'error' => 'Missing Parameter',
-                'message' => 'At least one parameter of brand or mspn is required.'
+                'message' => 'mspn is required.'
             ], 400);
         }
 
