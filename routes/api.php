@@ -14,15 +14,16 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-// url/api/v1/catalog/tires/brands
-Route::prefix('v1/catalog')->group(function(){
-    // GET TIRE BRANDS
-    Route::get('tires/brands', [CatalogController::class,'getTiresByBrand']);
-    // GET WHEEL BRANDS
-    Route::get('wheels/brands', [CatalogController::class,'getWheelsByBrand']);
-    // GET CATALOGS BASE ON PARAMETER
-    Route::get('',[CatalogController::class, 'getCatalog']);
 
+Route::prefix('v1/catalog')->group(function(){
+    // GET TIRE BY BRANDS
+    Route::get('tires/brands', [CatalogController::class,'getTiresByBrand']);
+    // GET WHEEL BY BRANDS
+    Route::get('wheels/brands', [CatalogController::class,'getWheelsByBrand']);
+    // GET WHEEL BY SIZE
+    Route::get('wheels',[CatalogController::class, 'getWheels']);
+    // GET WHEEL BY SKU
+    Route::get('wheels/sku',[CatalogController::class, 'getWheelsBySku']);
 
 });
 

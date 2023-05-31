@@ -108,7 +108,7 @@ class CatalogResource extends JsonResource
             'bolt_circle_diameter_1' => $this->bolt_circle_diameter_1,
             'bolt_pattern_2' => $this->bolt_pattern_2,
             'bolt_circle_diameter_2' => $this->bolt_circle_diameter_2,
-           
+
         ];
     // return parent::toArray($request);
     }
