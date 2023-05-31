@@ -16,10 +16,6 @@ use Illuminate\Support\Facades\Route;
 */
 
 
-
-
-
-
 // url/api/v1/catalog/tires/brands
 Route::prefix('v1/catalog')->group(function () {
 
@@ -27,8 +23,17 @@ Route::prefix('v1/catalog')->group(function () {
     Route::get('tires', [CatalogController::class, 'getTires']);
     // GET WHEELS BY BRAND || SKU || SIZE
     Route::get('wheels', [CatalogController::class, 'getWheels']);
+    //GET location
+    Route::get('tires/locations', [CatalogController::class, 'tireLocation']);
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+
+
+// request
+// api/v1/catalog/tires/location
+
+// response

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\V1\CatalogResource;
 use App\Http\Resources\V1\CatalogTireResource;
+use App\Http\Resources\V1\CatalogVendorLocationResource;
 use App\Http\Resources\V1\CatalogWheelResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -98,5 +99,48 @@ class CatalogController extends Controller
                 'message' => 'Missing size parameters'
             ], 400);
         }
+    }
+
+
+
+    public function tireLocation(Request $request){
+        //kuha partnumber sa inventory feed
+        if($request->has('part_number')) {
+            $data = DB::connection('tire_connect_api')
+            ->table('inventory_feed AS i')
+            ->select('v.id', 
+            'v.short_code', 
+            'v.name', 
+            'v.email', 
+            'v.vast_vendor_number', 
+            'i.store_location_id',
+            's.addr', 
+            's.city', 
+            's.state',
+            's.zip_code',
+            's.lat',
+            's.lon',
+            's.phone',
+            's.cut_off'
+            )
+            ->join('vendor_main AS v', 'v.id', '=', 'i.vendor_main_id')
+            ->join('store_location AS s', 's.id', '=', 'i.store_location_id')
+            ->where('i.part_number', '=', $request->get('part_number'))
+            ->get();
+
+            return CatalogVendorLocationResource::collection($data);
+        }else {
+            return response()->json([
+                'error' => 'Missing Parameter',
+                'message' => 'At least one parameter of brand or mspn is required.'
+            ], 400);
+        }
+
+
+        //api/v1/catalog/tires/location?part_number={part_number} 
+        //hanapin yung vendor main id sa vendor main tas kunin yung id, name, email, vast vendor
+
+
+        //hanapin yung vendor main id sa store location
     }
 }
