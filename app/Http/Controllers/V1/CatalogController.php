@@ -181,6 +181,15 @@ class CatalogController extends Controller
         }, $responseData['Makes']);
         
         return response()->json(['Makes' => $makeNames]);
+    }
+
+    public function getVehicleOption(Request $request)
+    {
+
+        $requestOption = [
+            'Year' => $request->Year,
+            'VehicleModel' => $request->VehicleModel
+        ];
 
            return Http::withHeaders(['Content-Type' => 'application/json'])
                 ->post("https://api.ridestyler.net/Vehicle/GetConfigurations?Token=" . $request->token, $requestOption)->json();
