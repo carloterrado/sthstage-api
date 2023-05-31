@@ -192,7 +192,7 @@ class CatalogController extends Controller
         ];
 
            return Http::withHeaders(['Content-Type' => 'application/json'])
-                ->post("https://api.ridestyler.net/Vehicle/GetConfigurations?Token=" . $request->token, $requestOption)->json();
+                ->post("https://api.ridestyler.net/Vehicle/GetConfigurations?Token=" . $this->vehicleToken, $requestOption)->json();
 
     }
 }
