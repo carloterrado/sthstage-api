@@ -129,7 +129,7 @@ class CatalogController extends Controller
             ], 400);
         }
     }
-
+ 
 
     
     public function getVehicleYear(Request $request){
