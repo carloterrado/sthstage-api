@@ -25,12 +25,16 @@ Route::prefix('v1/catalog')->group(function () {
     Route::get('wheels', [CatalogController::class, 'getWheels']);
     //GET location
     Route::get('locations', [CatalogController::class, 'getLocation']);
-    //GET vehicle years
+
+    //GET CATALOG BY VEHICLE
     Route::get('vehicle/years', [CatalogController::class, 'getVehicleYear']);
-    
     Route::get('vehicle/makes', [CatalogController::class, 'getVehicleByMakes']);
     Route::get('vehicle/models', [CatalogController::class, 'getVehicleByModels']);
-    Route::get('vehicle/option', [CatalogController::class, 'getVehicleOption']);
+    Route::get('vehicle/configurations', [CatalogController::class, 'getVehicleConfigurations']);
+    Route::post('vehicle/tire-option-details', [CatalogController::class, 'getTireOptionDetails']);
+    Route::post('vehicle/bolt-pattern', [CatalogController::class, 'getBoltPatterns']);
+    Route::post('vehicle/fitments',[CatalogController::class, 'getFitments']);
+
 
 });
 
