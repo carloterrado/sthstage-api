@@ -25,15 +25,22 @@ Route::prefix('v1/catalog')->group(function () {
     Route::get('wheels', [CatalogController::class, 'getWheels']);
     //GET location
     Route::get('locations', [CatalogController::class, 'getLocation']);
+     // GET INVENTORY/Price by location
+     Route::get('inventory', [CatalogController::class, 'inventoryPrice']);
+
+    
 
     //GET CATALOG BY VEHICLE
     Route::get('vehicle/years', [CatalogController::class, 'getVehicleYear']);
     Route::get('vehicle/makes', [CatalogController::class, 'getVehicleByMakes']);
     Route::get('vehicle/models', [CatalogController::class, 'getVehicleByModels']);
     Route::get('vehicle/configurations', [CatalogController::class, 'getVehicleConfigurations']);
-    Route::post('vehicle/tire-option-details', [CatalogController::class, 'getTireOptionDetails']);
-    Route::post('vehicle/bolt-pattern', [CatalogController::class, 'getBoltPatterns']);
-    Route::post('vehicle/fitments',[CatalogController::class, 'getFitments']);
+    Route::get('vehicle/tire-option-details', [CatalogController::class, 'getTireOptionDetails']);
+    Route::get('vehicle/bolt-pattern', [CatalogController::class, 'getBoltPatterns']);
+    Route::get('vehicle/fitments',[CatalogController::class, 'getFitments']);
+
+    // GET ORDER STATUS
+    Route::get('order/status', [CatalogController::class, 'getOrderStatus']);
 
 
 });

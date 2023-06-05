@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\V1\CatalogInventoryPriceResource;
 use App\Http\Resources\V1\CatalogResource;
 use App\Http\Resources\V1\CatalogTireResource;
 use App\Http\Resources\V1\CatalogVendorLocationResource;
@@ -117,8 +118,91 @@ class CatalogController extends Controller
         ], 400);
     }
 
+    //Get inventory price location
+    public function inventoryPrice(Request $request)
+    {
+        if (!$request->has('mspn')) {
+            return response()->json([
+                'error' => 'Missing Parameter',
+                'message' => 'mspn is required.'
+            ], 400);
+        }
 
-    public function getLocation(Request $request){
+
+        if ($request->has('brand') || $request->has('mspn')) {
+
+            $data = DB::connection('tire_connect_api')
+                ->table('inventory_feed AS i')
+                ->when($request->has('brand'), function ($query) use ($request) {
+                    $query->where('n.brand', $request->brand);
+                })
+                ->select(
+                    'i.id',
+                    'n.brand',
+                    'n.mspn',
+                    'i.vendor_main_id',
+                    'v.name',
+                    'n.netnet',
+                    'i.qty',
+                    's.city',
+                    's.state',
+                )
+
+                ->when($request->has('mspn'), function ($query) use ($request) {
+                    $query->where('n.mspn', $request->mspn);
+                })
+                ->join('netnet_price AS n', 'n.mspn', '=', 'i.part_number')
+                ->join('vendor_main AS v', 'v.id', '=',  'i.vendor_main_id')
+                ->join('store_location AS s', 's.vendor_main_id', '=', 'i.vendor_main_id')
+                ->distinct()
+                ->get();
+
+
+            //Many Location
+            $combinedData = [];
+
+            foreach ($data as $item) {
+                $existingItem = array_filter($combinedData, function ($value) use ($item) {
+                    return $value['id'] === $item->id && $value['brand'] === $item->brand && $value['mspn'] === $item->mspn;
+                });
+
+                if (!empty($existingItem)) {
+                    $index = key($existingItem);
+                    $combinedData[$index]['location'][] = [
+                        'vendor' => $item->vendor_main_id,
+                        'vendor_name' => $item->name . ' ' . '-' . ' ' . $item->city . ',' . $item->state,
+                        'price' => $item->netnet,
+                        'qty' => $item->qty
+                    ];
+                } else {
+                    $combinedData[] = [
+                        'id' => $item->id,
+                        'brand' => $item->brand,
+                        'mspn' => $item->mspn,
+                        'location' => [
+                            [
+                                'vendor' => $item->vendor_main_id,
+                                'vendor_name' => $item->name . ' ' . '-' . ' ' . $item->city . ',' . $item->state,
+                                'price' => $item->netnet,
+                                'qty' => $item->qty
+                            ]
+                        ]
+                    ];
+                }
+            }
+
+            return $combinedData;
+            // return CatalogInventoryPriceResource::collection($combinedData);
+
+        }
+
+
+   
+    }
+
+
+    public function getLocation(Request $request)
+    {
         //kuha partnumber sa inventory feed
         if ($request->has('part_number')) {
             $data = DB::connection('tire_connect_api')
@@ -154,7 +238,7 @@ class CatalogController extends Controller
     public function getVehicleByMakes(Request $request)
     {
         $requestYear = [
-            'Year' => $request->year
+            'Year' => $request->Year
         ];
 
         return Http::withHeaders(['Content-Type' => 'application/json'])
@@ -166,8 +250,8 @@ class CatalogController extends Controller
     public function getVehicleByModels(Request $request)
     {
         $requestYear = [
-            'Year' => $request->year,
-            'VehicleMake' => $request->makes
+            'Year' => $request->Year,
+            'VehicleMake' => $request->VehicleMake
 
         ];
 
@@ -223,6 +307,18 @@ class CatalogController extends Controller
         ];
         return Http::withHeaders(['Content-Type' => 'application/json'])
         ->post("https://api.ridestyler.net/Vehicle/GetFitments?Token=" . $this->vehicleToken, $requestOption)->json();
+    }
+
+
+    public function getOrderStatus(Request $request)
+    {
+       $orderStatus = DB::connection('tire_connect_api')->table('orderList')
+       ->select('orderList.po_number', 'orderStatus.status')
+       ->where(['orderList.po_number' => $request->po_number, 'orderList.user_id' => $request->user_id])
+       ->leftJoin('orderStatus', 'orderList.order_status_id', '=', 'orderStatus.id')
+       ->get();
+       
+        return response()->json($orderStatus);
     }
 
     
