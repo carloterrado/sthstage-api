@@ -160,7 +160,7 @@ class CatalogController extends Controller
     public function getVehicleByMakes(Request $request)
     {
         $requestYear = [
-            'Year' => $request->year
+            'Year' => $request->Year
         ];
 
         return Http::withHeaders(['Content-Type' => 'application/json'])
@@ -172,8 +172,8 @@ class CatalogController extends Controller
     public function getVehicleByModels(Request $request)
     {
         $requestYear = [
-            'Year' => $request->year,
-            'VehicleMake' => $request->makes
+            'Year' => $request->Year,
+            'VehicleMake' => $request->VehicleMake
 
         ];
 
@@ -229,6 +229,18 @@ class CatalogController extends Controller
         ];
         return Http::withHeaders(['Content-Type' => 'application/json'])
         ->post("https://api.ridestyler.net/Vehicle/GetFitments?Token=" . $this->vehicleToken, $requestOption)->json();
+    }
+
+
+    public function getOrderStatus(Request $request)
+    {
+       $orderStatus = DB::connection('tire_connect_api')->table('orderList')
+       ->select('orderList.po_number', 'orderStatus.status')
+       ->where(['orderList.po_number' => $request->po_number, 'orderList.user_id' => $request->user_id])
+       ->leftJoin('orderStatus', 'orderList.order_status_id', '=', 'orderStatus.id')
+       ->get();
+       
+        return response()->json($orderStatus);
     }
 
     

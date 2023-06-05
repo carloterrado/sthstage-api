@@ -35,6 +35,9 @@ Route::prefix('v1/catalog')->group(function () {
     Route::post('vehicle/bolt-pattern', [CatalogController::class, 'getBoltPatterns']);
     Route::post('vehicle/fitments',[CatalogController::class, 'getFitments']);
 
+    // GET ORDER STATUS
+    Route::get('order/status', [CatalogController::class, 'getOrderStatus']);
+
 
 });
 
