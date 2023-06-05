@@ -142,16 +142,10 @@ class CatalogController extends Controller
  
 
     
-    public function getVehicleYear(Request $request){
-
-        $requestYear = [
-            'YearMin' => $request->YearMin,
-            'YearMax' => $request->YearMax
-        ];
-
+    public function getVehicleYear(){
 
         return Http::withHeaders(['Content-Type' => 'application/json'])
-        ->post("https://api.ridestyler.net/Vehicle/GetYears?Token=" . $this->vehicleToken, $requestYear)
+        ->post("https://api.ridestyler.net/Vehicle/GetYears?Token=" . $this->vehicleToken)
         ->json();
 
     }
