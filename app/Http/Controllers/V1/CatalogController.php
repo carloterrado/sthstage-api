@@ -203,25 +203,19 @@ class CatalogController extends Controller
 
     public function getLocation(Request $request)
     {
-        //kuha partnumber sa inventory feed
-        if ($request->has('part_number')) {
+        if($request->has('location_id')){
             $data = DB::connection('tire_connect_api')
-            ->table('inventory_feed AS i')
-            ->select('v.id', 'v.short_code', 'v.name', 'v.email')
-            ->selectRaw('GROUP_CONCAT(CONCAT_WS(" ", v.name, s.city, s.state)) AS store_locations')
-            ->join('vendor_main AS v', 'v.id', '=', 'i.vendor_main_id')
-            ->join('store_location AS s', 's.id', '=', 'i.store_location_id')
-            ->where('i.part_number', '=', $request->get('part_number'))
-            ->groupBy('v.id', 'v.short_code', 'v.name', 'v.email')
+            ->table('store_location')
+            ->where('id', $request->get('location_id'))
             ->get();
-
-            return CatalogVendorLocationResource::collection($data);
-        } else {
-            return response()->json([
-                'error' => 'Missing Parameter',
-                'message' => 'At least one parameter of brand or mspn is required.'
-            ], 400);
+        }else{
+            $data = DB::connection('tire_connect_api')
+            ->table('store_location')
+            ->get();
         }
+
+        return CatalogVendorLocationResource::collection($data);
+        // return response()->json($data);
     }
  
 
