@@ -34,11 +34,9 @@ class CatalogController extends Controller
     public function getWheels(Request $request)
     {
 
-       
         if ((!$request->has('wheel_diameter') && !$request->has('wheel_width')) && ($request->has('brand') || $request->has('mspn'))) {
             // return $catalog_key;
             $data = DB::table('catalog')
-                
                 ->where(['category' => 2])
                 ->when($request->has('brand'), function ($query) use ($request) {
                     $query->where('brand', $request->brand);
@@ -53,7 +51,7 @@ class CatalogController extends Controller
 
         if ($request->has('wheel_diameter') && $request->has('wheel_width')) {
             $data = DB::table('catalog')
-              
+                
                 ->where([
                     'wheel_diameter' => $request->wheel_diameter,
                     'wheel_width' => $request->wheel_width,
@@ -118,7 +116,30 @@ class CatalogController extends Controller
     //Get inventory price location
     public function inventoryPrice(Request $request)
     {
-        if (!$request->has('mspn')) {
+        if ($request->has('brand') && $request->has('mspn')) {
+
+            $data = DB::table('inventory_feed AS i')
+            ->select(
+                'i.brand',
+                'i.part_number',
+                'i.vendor_main_id',
+                'i.store_location_id',
+                'n.netnet',
+                'i.qty',
+            )
+            ->join('netnet_price AS n', function ($join) {
+                $join->on('n.brand', '=', 'i.brand')
+                    ->on('n.mspn', '=', 'i.part_number')
+                    ->on('n.vendor', '=', 'i.vendor_main_id');
+            })
+            ->join(DB::raw('(SELECT MIN(id) as min_id FROM netnet_price GROUP BY brand, mspn, vendor) AS sub'), function ($join) {
+                $join->on('n.id', '=', 'sub.min_id');
+            })
+            ->where('i.part_number', $request->mspn)
+            ->where('i.brand', $request->brand)
+            ->get();
+
+        } else {
             return response()->json([
                 'error' => 'Missing Parameter',
                 'message' => 'mspn is required.'
@@ -126,104 +147,31 @@ class CatalogController extends Controller
         }
 
 
-        if ($request->has('brand') || $request->has('mspn')) {
-
-            $data = DB::table('inventory_feed AS i')
-                ->when($request->has('brand'), function ($query) use ($request) {
-                    $query->where('n.brand', $request->brand);
-                })
-                ->select(
-                    'i.id',
-                    'n.brand',
-                    'n.mspn',
-                    'i.vendor_main_id',
-                    'v.name',
-                    'n.netnet',
-                    'i.qty',
-                    's.city',
-                    's.state',
-                )
-
-                ->when($request->has('mspn'), function ($query) use ($request) {
-                    $query->where('n.mspn', $request->mspn);
-                })
-                ->join('netnet_price AS n', 'n.mspn', '=', 'i.part_number')
-                ->join('vendor_main AS v', 'v.id', '=',  'i.vendor_main_id')
-                ->join('store_location AS s', 's.vendor_main_id', '=', 'i.vendor_main_id')
-                ->distinct()
-                ->get();
-
-
-            //Many Location
-            $combinedData = [];
-
-            foreach ($data as $item) {
-                $existingItem = array_filter($combinedData, function ($value) use ($item) {
-                    return $value['id'] === $item->id && $value['brand'] === $item->brand && $value['mspn'] === $item->mspn;
-                });
-
-                if (!empty($existingItem)) {
-                    $index = key($existingItem);
-                    $combinedData[$index]['location'][] = [
-                        'vendor' => $item->vendor_main_id,
-                        'vendor_name' => $item->name . ' ' . '-' . ' ' . $item->city . ',' . $item->state,
-                        'price' => $item->netnet,
-                        'qty' => $item->qty
-                    ];
-                } else {
-                    $combinedData[] = [
-                        'id' => $item->id,
-                        'brand' => $item->brand,
-                        'mspn' => $item->mspn,
-                        'location' => [
-                            [
-                                'vendor' => $item->vendor_main_id,
-                                'vendor_name' => $item->name . ' ' . '-' . ' ' . $item->city . ',' . $item->state,
-                                'price' => $item->netnet,
-                                'qty' => $item->qty
-                            ]
-                        ]
-                    ];
-                }
-            }
-
-            return $combinedData;
-            // return CatalogInventoryPriceResource::collection($combinedData);
-
-        }
+        return  CatalogInventoryPriceResource::make($data);
     }
 
 
     public function getLocation(Request $request)
     {
-        //kuha partnumber sa inventory feed
-        if ($request->has('part_number')) {
-            $data = DB::table('inventory_feed AS i')
-                ->select('v.id', 'v.short_code', 'v.name', 'v.email')
-                ->selectRaw('GROUP_CONCAT(CONCAT_WS(" ", v.name, s.city, s.state)) AS store_locations')
-                ->join('vendor_main AS v', 'v.id', '=', 'i.vendor_main_id')
-                ->join('store_location AS s', 's.id', '=', 'i.store_location_id')
-                ->where('i.part_number', '=', $request->get('part_number'))
-                ->groupBy('v.id', 'v.short_code', 'v.name', 'v.email')
-                ->get();
-
-            return CatalogVendorLocationResource::collection($data);
+        if($request->has('location_id')){
+            $data = DB::table('store_location')
+            ->where('id', $request->get('location_id'))
+            ->get();
         } else {
-            return response()->json([
-                'error' => 'Missing Parameter',
-                'message' => 'At least one parameter of brand or mspn is required.'
-            ], 400);
+            $data = DB::table('store_location')
+            ->get();
         }
+
+        return CatalogVendorLocationResource::collection($data);
     }
 
-
-
-    public function getVehicleYear(Request $request)
-    {
+    
+    public function getVehicleYear(){
 
         return Http::withHeaders(['Content-Type' => 'application/json'])
-            ->post("https://api.ridestyler.net/Vehicle/GetYears?Token=" . $this->vehicleToken)
-            ->json();
+        ->post("https://api.ridestyler.net/Vehicle/GetYears?Token=" . $this->vehicleToken)
+        ->json();
+
     }
 
 
@@ -327,12 +275,12 @@ class CatalogController extends Controller
 
     public function getOrderStatus(Request $request)
     {
-        $orderStatus = DB::table('orderList')
-            ->select('orderList.po_number', 'orderStatus.status')
-            ->where(['orderList.po_number' => $request->po_number, 'orderList.user_id' => $request->user_id])
-            ->leftJoin('orderStatus', 'orderList.order_status_id', '=', 'orderStatus.id')
-            ->get();
-
+       $orderStatus = DB::table('orderList')
+       ->select('orderList.po_number', 'orderStatus.status')
+       ->where(['orderList.po_number' => $request->po_number, 'orderList.user_id' => $request->user_id])
+       ->leftJoin('orderStatus', 'orderList.order_status_id', '=', 'orderStatus.id')
+       ->get();
+       
         return response()->json($orderStatus);
     }
 }

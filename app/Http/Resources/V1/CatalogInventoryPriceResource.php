@@ -14,30 +14,56 @@ class CatalogInventoryPriceResource extends JsonResource
      */
     public function toArray($request)
     {
+
+        $formattedData = [];
+
+
+        foreach ($this->resource as $data) {
+
+            //pass sa $existingdata array kapag may duplicated vendor_main_id value
+            $existingData = array_filter($formattedData, function ($combinedData) use ($data) {
+                return $combinedData['vendor_main_id'] === $data->vendor_main_id;
+            });
+
         
-        // $locations = $request->collection->groupBy('vendor_main_id')->map(function ($item) {
-        //     $location = $item->first();
-        //     $location['vendor_name'] = $location['name'] . ' - ' . $location['city'] . ', ' . $location['state'];
-        //     $location['price'] = $location['netnet'];
-        //     unset($location['name'], $location['city'], $location['state'], $location['netnet']);
-        //     return $location;
-        // })->values();
+            if (empty($existingData)) {
 
-        return [
-            'id' => $this->id,
-            'brand' => $this->brand,
-            'mspn' => $this->mspn,
-            // 'location' => $locations,
+                //add ganto pag walang laman si $existingdata
+                $formattedData[] = [
+                    'brand' => $data->brand,
+                    'mspn' => $data->part_number,
+                    'vendor_main_id' => $data->vendor_main_id,
+                    'location' => [
+                        [
+                            'store_location_id' => $data->store_location_id,
+                            'price' => $data->netnet,
+                            'qty' => $data->qty,
+                        ],
+                    ],
+                ];
 
-            'location' =>  [
-                [
-                    'vendor' => $this->vendor_main_id,
-                    'vendor_name' => $this->name . ' ' . '-' . ' ' . $this->city . ',' . $this->state,
-                    'price' => $this->netnet,
-                    'qty' => $this->qty,
-                ],
-            ],
+            } else {
 
-        ];
+                //add ganto pag meron laman
+                $formattedData[array_key_first($existingData)]['location'][] = [
+                    'store_location_id' => $data->store_location_id,
+                    'price' => $data->netnet,
+                    'qty' => $data->qty,
+                ];
+
+            }
+
+        }
+
+
+        //remove vendor_main_id sa response
+        $responseData = array_map(function ($data) {
+            unset($data['vendor_main_id']);
+            return $data;
+        }, $formattedData);
+        
+        
+        return $responseData;
+
     }
 }
