@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SthController;
+use App\Http\Controllers\V1\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,9 +17,8 @@ use Illuminate\Support\Facades\Route;
 */
 
 
-Route::get('/', function(){
-    return view('welcome');
-});
 
-Route::get('settings', [SettingsController::class, 'showSettings']);
+
+Route::get('/settings', [SettingsController::class, 'showSettings']);
+Route::get('users', [UserController::class, 'getUsers'])->name('users');
 Route::post('settings/catalog', [SettingsController::class, 'submitCatalog'])->name('submitCatalog');
