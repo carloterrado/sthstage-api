@@ -34,11 +34,11 @@ class CatalogController extends Controller
     public function getWheels(Request $request)
     {
 
-       
+
         if ((!$request->has('wheel_diameter') && !$request->has('wheel_width')) && ($request->has('brand') || $request->has('mspn'))) {
             // return $catalog_key;
             $data = DB::table('catalog')
-                
+
                 ->where(['category' => 2])
                 ->when($request->has('brand'), function ($query) use ($request) {
                     $query->where('brand', $request->brand);
@@ -53,7 +53,7 @@ class CatalogController extends Controller
 
         if ($request->has('wheel_diameter') && $request->has('wheel_width')) {
             $data = DB::table('catalog')
-              
+
                 ->where([
                     'wheel_diameter' => $request->wheel_diameter,
                     'wheel_width' => $request->wheel_width,
@@ -77,7 +77,7 @@ class CatalogController extends Controller
 
     public function getTires(Request $request)
     {
-       
+        return $request->al();
         if ((!$request->has('section_width') && !$request->has('aspect_ratio') && !$request->has('rim_diameter')) && ($request->has('brand') || $request->has('mspn'))) {
             $data = DB::table('catalog')
                 ->where(['category' => 1])
@@ -292,15 +292,36 @@ class CatalogController extends Controller
     }
 
 
-    public function getTireOptionDetails(Request $request)
+    public function getTiresByVehicle(Request $request)
     {
 
         $requestOption = [
-            'VehicleConfiguration' => $request->VehicleConfiguration,
+            'VehicleConfiguration' => $request->vehicleOptionID,
         ];
 
-        return Http::withHeaders(['Content-Type' => 'application/json'])
+        $response = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetTireOptionDetails?Token=" . $this->vehicleToken, $requestOption)->json();
+
+        $details = collect($response['Details'])->map(function ($detail) {
+            return [
+                'Width' => $detail['Front']['Width'],
+                'AspectRatio' => $detail['Front']['AspectRatio'],
+                'InsideDiameter' => $detail['Front']['InsideDiameter'],
+            ];
+        });
+        $data = DB::table('catalog')
+            ->whereIn('section_width', $details->pluck('Width'))
+            ->whereIn('aspect_ratio', $details->pluck('AspectRatio'))
+            ->whereIn('rim_diameter', $details->pluck('InsideDiameter'))
+            ->when($request->has('brand'), function ($query) use ($request) {
+                $query->where('brand', $request->brand);
+            })
+            ->when($request->has('mspn'), function ($query) use ($request) {
+                $query->where('mspn', $request->mspn);
+            })
+            ->get();
+
+        return response()->json($data);
     }
 
 

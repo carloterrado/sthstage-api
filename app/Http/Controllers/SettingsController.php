@@ -7,11 +7,9 @@ use Illuminate\Http\Request;
 
 class SettingsController extends Controller
 {
-    //
+    
     public function showSettings(){
-
-        $catalogs = CatalogSettings::get();
-        return view('settings')->with(compact('catalogs'));
+        return view('settings.settings');
     }
 
 
