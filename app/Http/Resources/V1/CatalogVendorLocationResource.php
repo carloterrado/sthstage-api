@@ -22,11 +22,18 @@ class CatalogVendorLocationResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'vendor_id' => $this->id,
-            'vendor_short_code' => $this->short_code,
-            'vendor_name' => $this->name,
-            'vendor_email' => $this->toExplode($this->email),
-            'store_location' => $this->toExplode($this->store_locations),
+            'location_id' => $this->id,
+            'address' => $this->addr,
+            'city' => $this->city,
+            'state' => $this->state,
+            'zip_code' => $this->zip_code,
+            'email' => $this->email,
+            'phone' => $this->phone,
+            'cut_off' => $this->cut_off,
+            'TWIbranchCode' => $this->TWIbranchCode,
+            'TWIshiptocode' => $this->TWIshiptocode,
+            'NTWshiptocode' => $this->NTWshiptocode,
+            'branch_code' => $this->branch_code
         ];
 
     }
