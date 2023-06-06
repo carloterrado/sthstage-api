@@ -34,11 +34,9 @@ class CatalogController extends Controller
     public function getWheels(Request $request)
     {
 
-        $catalog_key = CatalogSettings::where('is_show', 1)->pluck('catalog_key');
         if ((!$request->has('wheel_diameter') && !$request->has('wheel_width')) && ($request->has('brand') || $request->has('mspn'))) {
             // return $catalog_key;
-            $data = DB::connection('tire_connect_api')->table('catalog')
-                ->select(...$catalog_key)
+            $data = DB::table('catalog')
                 ->where(['category' => 2])
                 ->when($request->has('brand'), function ($query) use ($request) {
                     $query->where('brand', $request->brand);
@@ -52,8 +50,8 @@ class CatalogController extends Controller
         }
 
         if ($request->has('wheel_diameter') && $request->has('wheel_width')) {
-            $data = DB::connection('tire_connect_api')->table('catalog')
-                ->select(...$catalog_key)
+            $data = DB::table('catalog')
+                
                 ->where([
                     'wheel_diameter' => $request->wheel_diameter,
                     'wheel_width' => $request->wheel_width,
@@ -77,11 +75,9 @@ class CatalogController extends Controller
 
     public function getTires(Request $request)
     {
-        $catalog_key = CatalogSettings::where('is_show', 1)->pluck('catalog_key');   
+       
         if ((!$request->has('section_width') && !$request->has('aspect_ratio') && !$request->has('rim_diameter')) && ($request->has('brand') || $request->has('mspn'))) {
-            $data = DB::connection('tire_connect_api')
-                ->table('catalog')
-                ->select(...$catalog_key)
+            $data = DB::table('catalog')
                 ->where(['category' => 1])
                 ->when($request->has('brand'), function ($query) use ($request) {
                     $query->where('brand', $request->brand);
@@ -94,8 +90,7 @@ class CatalogController extends Controller
         }
 
         if ($request->has('section_width') && $request->has('aspect_ratio') && $request->has('rim_diameter')) {
-            $data = DB::connection('tire_connect_api')->table('catalog')
-                ->select(...$catalog_key)
+            $data = DB::table('catalog')
                 ->where([
                     'section_width' => $request->section_width,
                     'aspect_ratio' => $request->aspect_ratio,
@@ -121,101 +116,52 @@ class CatalogController extends Controller
     //Get inventory price location
     public function inventoryPrice(Request $request)
     {
-        if (!$request->has('mspn')) {
+        if (!$request->has('brand') && $request->has('mspn')) {
             return response()->json([
                 'error' => 'Missing Parameter',
                 'message' => 'mspn is required.'
             ], 400);
+        } else {
+            
+            $data = DB::table('inventory_feed AS i')
+            ->select(
+                'i.brand',
+                'i.part_number',
+                'i.vendor_main_id',
+                'i.store_location_id',
+                'n.netnet',
+                'i.qty',
+            )
+            ->join('netnet_price AS n', function ($join) {
+                $join->on('n.brand', '=', 'i.brand')
+                    ->on('n.mspn', '=', 'i.part_number')
+                    ->on('n.vendor', '=', 'i.vendor_main_id');
+            })
+            ->join(DB::raw('(SELECT MIN(id) as min_id FROM netnet_price GROUP BY brand, mspn, vendor) AS sub'), function ($join) {
+                $join->on('n.id', '=', 'sub.min_id');
+            })
+            ->where('i.part_number', $request->mspn)
+            ->where('i.brand', $request->brand)
+            ->get();
         }
 
 
-        if ($request->has('brand') || $request->has('mspn')) {
-
-            $data = DB::connection('tire_connect_api')
-                ->table('inventory_feed AS i')
-                ->when($request->has('brand'), function ($query) use ($request) {
-                    $query->where('n.brand', $request->brand);
-                })
-                ->select(
-                    'i.id',
-                    'n.brand',
-                    'n.mspn',
-                    'i.vendor_main_id',
-                    'v.name',
-                    'n.netnet',
-                    'i.qty',
-                    's.city',
-                    's.state',
-                )
-
-                ->when($request->has('mspn'), function ($query) use ($request) {
-                    $query->where('n.mspn', $request->mspn);
-                })
-                ->join('netnet_price AS n', 'n.mspn', '=', 'i.part_number')
-                ->join('vendor_main AS v', 'v.id', '=',  'i.vendor_main_id')
-                ->join('store_location AS s', 's.vendor_main_id', '=', 'i.vendor_main_id')
-                ->distinct()
-                ->get();
-
-
-            //Many Location
-            $combinedData = [];
-
-            foreach ($data as $item) {
-                $existingItem = array_filter($combinedData, function ($value) use ($item) {
-                    return $value['id'] === $item->id && $value['brand'] === $item->brand && $value['mspn'] === $item->mspn;
-                });
-
-                if (!empty($existingItem)) {
-                    $index = key($existingItem);
-                    $combinedData[$index]['location'][] = [
-                        'vendor' => $item->vendor_main_id,
-                        'vendor_name' => $item->name . ' ' . '-' . ' ' . $item->city . ',' . $item->state,
-                        'price' => $item->netnet,
-                        'qty' => $item->qty
-                    ];
-                } else {
-                    $combinedData[] = [
-                        'id' => $item->id,
-                        'brand' => $item->brand,
-                        'mspn' => $item->mspn,
-                        'location' => [
-                            [
-                                'vendor' => $item->vendor_main_id,
-                                'vendor_name' => $item->name . ' ' . '-' . ' ' . $item->city . ',' . $item->state,
-                                'price' => $item->netnet,
-                                'qty' => $item->qty
-                            ]
-                        ]
-                    ];
-                }
-            }
-
-            return $combinedData;
-            // return CatalogInventoryPriceResource::collection($combinedData);
-
-        }
-
-
-   
+        return  CatalogInventoryPriceResource::make($data);
     }
 
 
     public function getLocation(Request $request)
     {
         if($request->has('location_id')){
-            $data = DB::connection('tire_connect_api')
-            ->table('store_location')
+            $data = DB::table('store_location')
             ->where('id', $request->get('location_id'))
             ->get();
-        }else{
-            $data = DB::connection('tire_connect_api')
-            ->table('store_location')
+        } else {
+            $data = DB::table('store_location')
             ->get();
         }
 
         return CatalogVendorLocationResource::collection($data);
-        // return response()->json($data);
     }
  
 
@@ -306,7 +252,7 @@ class CatalogController extends Controller
 
     public function getOrderStatus(Request $request)
     {
-       $orderStatus = DB::connection('tire_connect_api')->table('orderList')
+       $orderStatus = DB::table('orderList')
        ->select('orderList.po_number', 'orderStatus.status')
        ->where(['orderList.po_number' => $request->po_number, 'orderList.user_id' => $request->user_id])
        ->leftJoin('orderStatus', 'orderList.order_status_id', '=', 'orderStatus.id')
