@@ -44,6 +44,6 @@ class User extends Authenticatable
 
     public function catalogSettings()
     {
-        return $this->hasOne(OauthClient::class,'user_id')->select('catalog_column_settings');
+        return $this->hasOne(OauthClient::class,'user_id', 'id')->select('catalog_column_settings');
     }
 }

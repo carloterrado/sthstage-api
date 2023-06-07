@@ -76,7 +76,7 @@ class CatalogController extends Controller
 
     public function getTires(Request $request)
     {
-        
+       
         if ((!$request->has('section_width') && !$request->has('aspect_ratio') && !$request->has('rim_diameter')) && ($request->has('brand') || $request->has('mspn'))) {
             $data = DB::table('catalog')
                 ->where(['category' => 1])
