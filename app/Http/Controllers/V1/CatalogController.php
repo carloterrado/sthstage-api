@@ -76,7 +76,7 @@ class CatalogController extends Controller
 
     public function getTires(Request $request)
     {
-        return $request->al();
+        
         if ((!$request->has('section_width') && !$request->has('aspect_ratio') && !$request->has('rim_diameter')) && ($request->has('brand') || $request->has('mspn'))) {
             $data = DB::table('catalog')
                 ->where(['category' => 1])
@@ -273,6 +273,24 @@ class CatalogController extends Controller
         return response()->json($data);
     }
 
+    public function getWheelsByVehicle(Request $request)
+    {
+        $requestOption = [
+            'VehicleConfiguration' => $request->vehicleOptionID,
+        ];
+
+        $getFitments = Http::withHeaders(['Content-Type' => 'application/json'])
+            ->post("https://api.ridestyler.net/Vehicle/GetFitments?Token=" . $this->vehicleToken, $requestOption)->json();
+
+        $getBoltPatterns = Http::withHeaders(['Content-Type' => 'application/json'])
+            ->post("https://api.ridestyler.net/Wheel/GetBoltPatterns?Token=" . $this->vehicleToken, $requestOption)->json();
+
+
+        $details = collect([$getFitments, $getBoltPatterns]);
+
+        return response()->json($details);
+
+    }
 
     public function getBoltPatterns(Request $request)
     {
