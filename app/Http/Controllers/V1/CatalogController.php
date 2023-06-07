@@ -9,9 +9,11 @@ use App\Http\Resources\V1\CatalogTireResource;
 use App\Http\Resources\V1\CatalogVendorLocationResource;
 use App\Http\Resources\V1\CatalogWheelResource;
 use App\Models\CatalogSettings;
+use App\Models\OauthClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Laravel\Passport\Token;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CatalogController extends Controller
@@ -76,7 +78,9 @@ class CatalogController extends Controller
 
     public function getTires(Request $request)
     {
-       
+        $accessToken = $request->bearerToken();
+
+
         if ((!$request->has('section_width') && !$request->has('aspect_ratio') && !$request->has('rim_diameter')) && ($request->has('brand') || $request->has('mspn'))) {
             $data = DB::table('catalog')
                 ->where(['category' => 1])
@@ -120,26 +124,25 @@ class CatalogController extends Controller
         if ($request->has('brand') && $request->has('mspn')) {
 
             $data = DB::table('inventory_feed AS i')
-            ->select(
-                'i.brand',
-                'i.part_number',
-                'i.vendor_main_id',
-                'i.store_location_id',
-                'n.netnet',
-                'i.qty',
-            )
-            ->join('netnet_price AS n', function ($join) {
-                $join->on('n.brand', '=', 'i.brand')
-                    ->on('n.mspn', '=', 'i.part_number')
-                    ->on('n.vendor', '=', 'i.vendor_main_id');
-            })
-            ->join(DB::raw('(SELECT MIN(id) as min_id FROM netnet_price GROUP BY brand, mspn, vendor) AS sub'), function ($join) {
-                $join->on('n.id', '=', 'sub.min_id');
-            })
-            ->where('i.part_number', $request->mspn)
-            ->where('i.brand', $request->brand)
-            ->get();
-
+                ->select(
+                    'i.brand',
+                    'i.part_number',
+                    'i.vendor_main_id',
+                    'i.store_location_id',
+                    'n.netnet',
+                    'i.qty',
+                )
+                ->join('netnet_price AS n', function ($join) {
+                    $join->on('n.brand', '=', 'i.brand')
+                        ->on('n.mspn', '=', 'i.part_number')
+                        ->on('n.vendor', '=', 'i.vendor_main_id');
+                })
+                ->join(DB::raw('(SELECT MIN(id) as min_id FROM netnet_price GROUP BY brand, mspn, vendor) AS sub'), function ($join) {
+                    $join->on('n.id', '=', 'sub.min_id');
+                })
+                ->where('i.part_number', $request->mspn)
+                ->where('i.brand', $request->brand)
+                ->get();
         } else {
             return response()->json([
                 'error' => 'Missing Parameter',
@@ -154,25 +157,25 @@ class CatalogController extends Controller
 
     public function getLocation(Request $request)
     {
-        if($request->has('location_id')){
+        if ($request->has('location_id')) {
             $data = DB::table('store_location')
-            ->where('id', $request->get('location_id'))
-            ->get();
+                ->where('id', $request->get('location_id'))
+                ->get();
         } else {
             $data = DB::table('store_location')
-            ->get();
+                ->get();
         }
 
         return CatalogVendorLocationResource::collection($data);
     }
 
-    
-    public function getVehicleYear(){
+
+    public function getVehicleYear()
+    {
 
         return Http::withHeaders(['Content-Type' => 'application/json'])
-        ->post("https://api.ridestyler.net/Vehicle/GetYears?Token=" . $this->vehicleToken)
-        ->json();
-
+            ->post("https://api.ridestyler.net/Vehicle/GetYears?Token=" . $this->vehicleToken)
+            ->json();
     }
 
 
@@ -186,12 +189,8 @@ class CatalogController extends Controller
             ->post("https://api.ridestyler.net/Vehicle/GetMakes?Token=" . $this->vehicleToken, $requestYear)
             ->json();
 
-        $makes = collect($response['Makes'])->map(function ($make) {
-            return [
-                'VehicleMakeID' => $make['VehicleMakeID'],
-                'VehicleMakeName' => $make['VehicleMakeName']
-            ];
-        });
+
+        $makes = collect($response['Makes'])->pluck('VehicleMakeName')->toArray();
 
         return response()->json(['Makes' => $makes]);
     }
@@ -201,19 +200,14 @@ class CatalogController extends Controller
     {
         $requestYear = [
             'Year' => $request->year,
-            'VehicleMake' => $request->vehicleMake
-
+            'MakeName' => $request->make
         ];
 
         $response = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetModels?Token=" . $this->vehicleToken, $requestYear)->json();
 
-        $models = collect($response['Models'])->map(function ($model) {
-            return [
-                'VehicleModelID' => $model['VehicleModelID'],
-                'VehicleModelName' => $model['VehicleModelName']
-            ];
-        });
+
+        $models = collect($response['Models'])->pluck('VehicleModelName')->toArray();
 
         return response()->json(['Models' => $models]);
     }
@@ -224,28 +218,23 @@ class CatalogController extends Controller
 
         $requestOption = [
             'Year' => $request->year,
-            'VehicleModel' => $request->vehicleModel
+            'ModelName' => $request->model
         ];
 
         $response = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetConfigurations?Token=" . $this->vehicleToken, $requestOption)->json();
 
-        $options = collect($response['Configurations'])->map(function ($model) {
-            return [
-                'VehicleOptionID' => $model['VehicleConfigurationID'],
-                'VehicleOptionName' => $model['VehicleConfigurationName']
-            ];
-        });
-
+      
+        $options = collect($response['Configurations'])->pluck('VehicleConfigurationName')->toArray();
         return response()->json(['Options' => $options]);
     }
 
 
     public function getTiresByVehicle(Request $request)
     {
-
+        $exactMatch = $request->year . ' ' . $request->make . ' ' . $request->model . ' ' . $request->option;
         $requestOption = [
-            'VehicleConfiguration' => $request->vehicleOptionID,
+            'Search' => $exactMatch,
         ];
 
         $response = Http::withHeaders(['Content-Type' => 'application/json'])
@@ -258,6 +247,7 @@ class CatalogController extends Controller
                 'InsideDiameter' => $detail['Front']['InsideDiameter'],
             ];
         });
+
         $data = DB::table('catalog')
             ->whereIn('section_width', $details->pluck('Width'))
             ->whereIn('aspect_ratio', $details->pluck('AspectRatio'))
@@ -315,12 +305,12 @@ class CatalogController extends Controller
 
     public function getOrderStatus(Request $request)
     {
-       $orderStatus = DB::table('orderList')
-       ->select('orderList.po_number', 'orderStatus.status')
-       ->where(['orderList.po_number' => $request->po_number, 'orderList.user_id' => $request->user_id])
-       ->leftJoin('orderStatus', 'orderList.order_status_id', '=', 'orderStatus.id')
-       ->get();
-       
+        $orderStatus = DB::table('orderList')
+            ->select('orderList.po_number', 'orderStatus.status')
+            ->where(['orderList.po_number' => $request->po_number, 'orderList.user_id' => $request->user_id])
+            ->leftJoin('orderStatus', 'orderList.order_status_id', '=', 'orderStatus.id')
+            ->get();
+
         return response()->json($orderStatus);
     }
 }
