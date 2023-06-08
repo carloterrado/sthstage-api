@@ -4,17 +4,15 @@ namespace App\Http\Controllers\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\V1\CatalogInventoryPriceResource;
-use App\Http\Resources\V1\CatalogResource;
-use App\Http\Resources\V1\CatalogTireResource;
 use App\Http\Resources\V1\CatalogVendorLocationResource;
-use App\Http\Resources\V1\CatalogWheelResource;
-use App\Models\CatalogSettings;
-use App\Models\OauthClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Schema;
 use Laravel\Passport\Token;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Lcobucci\JWT\Configuration;
+use Lcobucci\JWT\Encoding\JoseEncoder;
+use Lcobucci\JWT\Token\Parser;
 
 class CatalogController extends Controller
 {
@@ -78,19 +76,30 @@ class CatalogController extends Controller
 
     public function getTires(Request $request)
     {
-        $accessToken = $request->bearerToken();
 
+
+        $bearerToken = request()->bearerToken();
+        
+        $tokenId = (new Parser(new JoseEncoder()))->parse($bearerToken)->claims()
+            ->all()['jti'];
+        $client = Token::find($tokenId)->client;
+        $excludeColumns = json_decode($client->catalog_column_settings);
+        $additionalColumnsToExclude = ['updated_at', 'created_at'];
+        $tableColumns = Schema::getColumnListing('catalog');
+      
 
         if ((!$request->has('section_width') && !$request->has('aspect_ratio') && !$request->has('rim_diameter')) && ($request->has('brand') || $request->has('mspn'))) {
             $data = DB::table('catalog')
-                ->where(['category' => 1])
-                ->when($request->has('brand'), function ($query) use ($request) {
-                    $query->where('brand', $request->brand);
-                })
-                ->when($request->has('mspn'), function ($query) use ($request) {
-                    $query->where('mspn', $request->mspn);
-                })
-                ->get();
+            ->where('category', 1)
+            ->when($request->has('brand'), function ($query) use ($request) {
+                $query->where('brand', $request->brand);
+            })
+            ->when($request->has('mspn'), function ($query) use ($request) {
+                $query->where('mspn', $request->mspn);
+            })
+            ->select(array_diff($tableColumns,array_merge($excludeColumns, $additionalColumnsToExclude)))
+            ->get();
+
             return response()->json($data);
         }
 
@@ -107,6 +116,7 @@ class CatalogController extends Controller
                 ->when($request->has('mspn'), function ($query) use ($request) {
                     $query->where('mspn', $request->mspn);
                 })
+                ->select(array_diff($tableColumns,array_merge($excludeColumns, $additionalColumnsToExclude)))
                 ->get();
             return response()->json($data);
         }
@@ -215,16 +225,15 @@ class CatalogController extends Controller
 
     public function getVehicleConfigurations(Request $request)
     {
-
         $requestOption = [
             'Year' => $request->year,
+            'MakeName' => $request->make,
             'ModelName' => $request->model
         ];
 
         $response = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetConfigurations?Token=" . $this->vehicleToken, $requestOption)->json();
 
-      
         $options = collect($response['Configurations'])->pluck('VehicleConfigurationName')->toArray();
         return response()->json(['Options' => $options]);
     }

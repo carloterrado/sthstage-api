@@ -4,11 +4,12 @@ namespace App\Http\Controllers\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\OauthClient;
-use App\Models\User;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+
 
 class UserController extends Controller
 {
@@ -37,18 +38,13 @@ class UserController extends Controller
 
     public function getUsers()
     {
-        
 
-        $users = DB::table('users')
-            // ->leftJoin('oauth_clients', 'users.id', '=', 'oauth_clients.user_id')
-            // ->select('users.*', 'oauth_clients.catalog_column_settings')
+        $users = DB::table('oauth_clients')->where('user_id', '!=', null)
             ->get()->toArray();
-
-
         return view('settings.users.users')->with(compact('users'));
     }
 
-    public function showUserCatalogSettings($user_id)
+    public function showUserCatalogSettings($id)
     {
         $columns = [
             "id",
@@ -147,15 +143,18 @@ class UserController extends Controller
             "bolt_pattern_2",
             "bolt_circle_diameter_2",
         ];
-        OauthClient::get();
-        $catalog = OauthClient::select('user_id', 'catalog_column_settings')->where('user_id', $user_id)->first()->toArray();
-        return view('settings.users.user-settings')->with(compact('catalog','columns'));
+
+        $client = OauthClient::select('id', 'catalog_column_settings')->where('id', $id)->first()->toArray();
+       
+
+        return view('settings.users.user-settings')->with(compact('client', 'columns','id'));
     }
 
-    public function updateUserCatalogColumnSettings(Request $request, $user_id)
+    public function updateUserColumnSettings(Request $request, $id)
     {
+        
         try {
-            OauthClient::where('user_id', (int)$user_id)->update([
+            OauthClient::where('id', $id)->update([
                 'catalog_column_settings' => json_encode($request->column)
             ]);
 
