@@ -397,15 +397,15 @@ class CatalogController extends Controller
             ->post("https://api.ridestyler.net/Vehicle/GetFitments?Token=" . $this->vehicleToken, $configID)->json();
 
 
-        $size = collect($getTireOptDetails['Details'])->map(function($detail){
-            return [
-                'Size' => $detail['Front']['Size'],
-                'Width' => $detail['Front']['Width'],
-                'AspectRatio' => $detail['Front']['AspectRatio'],
-                'InsideDiameter' => $detail['Front']['InsideDiameter']
-            ];
-        });
- gh
+        // $size = collect($getTireOptDetails['Details'])->map(function($detail){
+        //     return [
+        //         'Size' => $detail['Front']['Size'],
+        //         'Width' => $detail['Front']['Width'],
+        //         'AspectRatio' => $detail['Front']['AspectRatio'],
+        //         'InsideDiameter' => $detail['Front']['InsideDiameter']
+        //     ];
+        // });
+
 
         
         $wheelArr = [];
