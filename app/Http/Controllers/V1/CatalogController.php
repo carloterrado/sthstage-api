@@ -374,17 +374,85 @@ class CatalogController extends Controller
         $getTireOptDetails = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetTireOptionDetails?Token=" . $this->vehicleToken, $configID)->json();
 
-            // $options = collect($getTireOptDetails['Details'])->pluck('Front.Size')->flatten()->toArray();
-            return $responseGetFitment;
+        $getFitments = Http::withHeaders(['Content-Type' => 'application/json'])
+            ->post("https://api.ridestyler.net/Vehicle/GetFitments?Token=" . $this->vehicleToken, $configID)->json();
 
 
+        $size = collect($getTireOptDetails['Details'])->map(function($detail){
+            return [
+                'Size' => $detail['Front']['Size'],
+                'Width' => $detail['Front']['Width'],
+                'AspectRatio' => $detail['Front']['AspectRatio'],
+                'InsideDiameter' => $detail['Front']['InsideDiameter']
+            ];
+        });
 
-       
 
-     
+        
+        $wheelArr = [];
+        for($i = $getFitments['Fitments'][0]['VehicleFitmentWidthMin']; $i <= $getFitments['Fitments'][0]['VehicleFitmentWidthMax']; $i += 0.5 ){
+            $str = $getTireOptDetails['Details'][0]['Front']['InsideDiameter'] . 'x' . $i;
+            array_push($wheelArr , $str);
+        }
+
+        $response = [
+            'Size' => [
+                'Tires' => collect($getTireOptDetails['Details'])->pluck('Front.Size'),
+                'Wheels' => $wheelArr,
+            ]
+            
+        ];
+
+// 'size':[
+//     {
+//         'tire': 195/75R15,
+//         'wheels': [
+//             "15x6",
+//             "15x6.5",
+//             "15x7",
+//             "15x7.5",
+//             "15x8"
+//         ]
+//     },
+//     {
+//         'tire': 1205/75R15,
+//         'wheels': [
+//             "15x6",
+//             "15x6.5",
+//             "15x7",
+//             "15x7.5",
+//             "15x8"
+//         ]
+//     },
+// ]
+
+        // $size = collect($getTireOptDetails['Details'])->pluck('Front.Size')->flatten()->toArray();
+                    // $details = [
+            //     'Fitments' => collect($getFitments['Fitments'])->map(function($detail) {
+            //         return [
+            //             'VehicleFitment_BoltPatternID' => $detail['VehicleFitment_BoltPatternID'],
+            //             'VehicleFitmentHub' => $detail['VehicleFitmentHub'],
+            //             'VehicleFitmentWidthMin' => $detail['VehicleFitmentWidthMin'],
+            //             'VehicleFitmentWidthMax' => $detail['VehicleFitmentWidthMax'],
+            //             'VehicleFitmentOffsetMin' => $detail['VehicleFitmentOffsetMin'],
+            //             'VehicleFitmentOffsetMax' => $detail['VehicleFitmentOffsetMax'],
+            //         ];
+            //     }),
+            //     'BoltPatterns' =>
+            //         [
+            //             'BoltPatternSpacingMM' =>$getBoltPatterns['BoltPatterns'][1]['BoltPatternSpacingMM'],
+            //             'BoltPatternBoltCount' => $getBoltPatterns['BoltPatterns'][1]['BoltPatternBoltCount']
+            //         ],
+
+            //     'InsideDiameter' => $insideDiameter
+            // ];
+
+        return response()->json($response);
 
 
     }
+
+
 
     public function getBoltPatterns(Request $request)
     {
