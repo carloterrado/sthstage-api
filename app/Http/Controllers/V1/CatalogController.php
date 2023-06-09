@@ -324,28 +324,6 @@ class CatalogController extends Controller
             $insideDiameter = $insideDiameter = $getTireOptDetails['Details'][0]['Front']['InsideDiameter'];
             
 
-            //get the details needed
-            // $details = [
-            //     'Fitments' => collect($getFitments['Fitments'])->map(function($detail) {
-            //         return [
-            //             'VehicleFitment_BoltPatternID' => $detail['VehicleFitment_BoltPatternID'],
-            //             'VehicleFitmentHub' => $detail['VehicleFitmentHub'],
-            //             'VehicleFitmentWidthMin' => $detail['VehicleFitmentWidthMin'],
-            //             'VehicleFitmentWidthMax' => $detail['VehicleFitmentWidthMax'],
-            //             'VehicleFitmentOffsetMin' => $detail['VehicleFitmentOffsetMin'],
-            //             'VehicleFitmentOffsetMax' => $detail['VehicleFitmentOffsetMax'],
-            //         ];
-            //     }),
-            //     'BoltPatterns' =>
-            //         [
-            //             'BoltPatternSpacingMM' =>$getBoltPatterns['BoltPatterns'][1]['BoltPatternSpacingMM'],
-            //             'BoltPatternBoltCount' => $getBoltPatterns['BoltPatterns'][1]['BoltPatternBoltCount']
-            //         ],
-
-            //     'InsideDiameter' => $insideDiameter
-            // ];
-
-
 
             $bearerToken = request()->bearerToken();
             $tokenId = (new Parser(new JoseEncoder()))->parse($bearerToken)->claims()
@@ -397,16 +375,6 @@ class CatalogController extends Controller
             ->post("https://api.ridestyler.net/Vehicle/GetFitments?Token=" . $this->vehicleToken, $configID)->json();
 
 
-        // $size = collect($getTireOptDetails['Details'])->map(function($detail){
-        //     return [
-        //         'Size' => $detail['Front']['Size'],
-        //         'Width' => $detail['Front']['Width'],
-        //         'AspectRatio' => $detail['Front']['AspectRatio'],
-        //         'InsideDiameter' => $detail['Front']['InsideDiameter']
-        //     ];
-        // });
-
-
         
         $wheelArr = [];
         for($i = $getFitments['Fitments'][0]['VehicleFitmentWidthMin']; $i <= $getFitments['Fitments'][0]['VehicleFitmentWidthMax']; $i += 0.5 ){
@@ -421,50 +389,6 @@ class CatalogController extends Controller
             ]
             
         ];
-
-// 'size':[
-//     {
-//         'tire': 195/75R15,
-//         'wheels': [
-//             "15x6",
-//             "15x6.5",
-//             "15x7",
-//             "15x7.5",
-//             "15x8"
-//         ]
-//     },
-//     {
-//         'tire': 1205/75R15,
-//         'wheels': [
-//             "15x6",
-//             "15x6.5",
-//             "15x7",
-//             "15x7.5",
-//             "15x8"
-//         ]
-//     },
-// ]
-
-        // $size = collect($getTireOptDetails['Details'])->pluck('Front.Size')->flatten()->toArray();
-                    // $details = [
-            //     'Fitments' => collect($getFitments['Fitments'])->map(function($detail) {
-            //         return [
-            //             'VehicleFitment_BoltPatternID' => $detail['VehicleFitment_BoltPatternID'],
-            //             'VehicleFitmentHub' => $detail['VehicleFitmentHub'],
-            //             'VehicleFitmentWidthMin' => $detail['VehicleFitmentWidthMin'],
-            //             'VehicleFitmentWidthMax' => $detail['VehicleFitmentWidthMax'],
-            //             'VehicleFitmentOffsetMin' => $detail['VehicleFitmentOffsetMin'],
-            //             'VehicleFitmentOffsetMax' => $detail['VehicleFitmentOffsetMax'],
-            //         ];
-            //     }),
-            //     'BoltPatterns' =>
-            //         [
-            //             'BoltPatternSpacingMM' =>$getBoltPatterns['BoltPatterns'][1]['BoltPatternSpacingMM'],
-            //             'BoltPatternBoltCount' => $getBoltPatterns['BoltPatterns'][1]['BoltPatternBoltCount']
-            //         ],
-
-            //     'InsideDiameter' => $insideDiameter
-            // ];
 
         return response()->json($response);
 
