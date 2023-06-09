@@ -405,7 +405,7 @@ class CatalogController extends Controller
                 'InsideDiameter' => $detail['Front']['InsideDiameter']
             ];
         });
-
+ gh
 
         
         $wheelArr = [];
