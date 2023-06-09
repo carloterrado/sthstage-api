@@ -241,9 +241,9 @@ class CatalogController extends Controller
         ];
 
         $response = Http::withHeaders(['Content-Type' => 'application/json'])
-            ->post("https://api.ridestyler.net/Vehicle/GetConfigurations?Token=" . $this->vehicleToken, $requestOption)->json();
+            ->post("https://api.ridestyler.net/Vehicle/GetDescriptions?Token=" . $this->vehicleToken, $requestOption)->json();
 
-        $options = collect($response['Configurations'])->pluck('VehicleConfigurationName')->toArray();
+        $options = collect($response['Descriptions'])->pluck('TrimDescription')->flatten()->toArray();
         return response()->json(['Options' => $options]);
     }
 
@@ -367,27 +367,21 @@ class CatalogController extends Controller
         $configID = [
             'VehicleConfiguration' => collect($responseGetDesc['Descriptions'])->pluck('ConfigurationID')->implode(',')
         ];
+        $responseGetFitment = Http::withHeaders(['Content-Type' => 'application/json'])
+        ->post("https://api.ridestyler.net/Vehicle/GetFitments?Token=" . $this->vehicleToken, $requestOption)->json();
 
 
         $getTireOptDetails = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetTireOptionDetails?Token=" . $this->vehicleToken, $configID)->json();
 
+            // $options = collect($getTireOptDetails['Details'])->pluck('Front.Size')->flatten()->toArray();
+            return $responseGetFitment;
 
 
-        $size = collect($getTireOptDetails['Details'])->map(function($detail){
-            return [
-                $detail['Front']['Size']
-            ];
-        });
-        return $size;
 
-        // $size = collect($getTireOptDetails['Details'][0]['Front'])->pluck('Size')->toArray();
-        
+       
 
-        // $options = collect($response['Configurations'])->pluck('VehicleConfigurationName')->toArray();
-        // return response()->json(['Options' => $options]);
-
-        return response()->json(['Size' => $size]);
+     
 
 
     }
