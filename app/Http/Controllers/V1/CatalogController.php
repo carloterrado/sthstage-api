@@ -56,7 +56,7 @@ class CatalogController extends Controller
                 ->select(array_diff($tableColumns,array_merge($excludeColumns, $additionalColumnsToExclude)))
                 ->get();
 
-            return response()->json($data);
+            return response()->json(['data' => $data]);
         }
 
         if ($request->has('wheel_diameter') && $request->has('wheel_width')) {
@@ -109,7 +109,7 @@ class CatalogController extends Controller
             ->select(array_diff($tableColumns,array_merge($excludeColumns, $additionalColumnsToExclude)))
             ->get();
 
-            return response()->json($data);
+            return response()->json(['data' => $data]);
         }
 
         if ($request->has('section_width') && $request->has('aspect_ratio') && $request->has('rim_diameter')) {
@@ -127,7 +127,7 @@ class CatalogController extends Controller
                 })
                 ->select(array_diff($tableColumns,array_merge($excludeColumns, $additionalColumnsToExclude)))
                 ->get();
-            return response()->json($data);
+            return response()->json(['data' => $data]);
         }
 
 
@@ -288,7 +288,7 @@ class CatalogController extends Controller
             ->select(array_diff($tableColumns,array_merge($excludeColumns, $additionalColumnsToExclude)))
             ->get();
 
-        return response()->json($data);
+        return response()->json(['data' => $data]);
     }
 
     public function getWheelsByVehicle(Request $request)
@@ -327,7 +327,7 @@ class CatalogController extends Controller
         
 
         //get the details needed
-        $details = [
+        $data = [
             'Fitments' => collect($getFitments['Fitments'])->map(function($detail) {
                 return [
                     'VehicleFitment_BoltPatternID' => $detail['VehicleFitment_BoltPatternID'],
@@ -351,7 +351,7 @@ class CatalogController extends Controller
 
 
 
-        return response()->json($details);
+        return response()->json(['data' => $data]);
     }
 
     public function getBoltPatterns(Request $request)
