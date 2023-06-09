@@ -276,7 +276,12 @@ class CatalogController extends Controller
     public function getBoltPatterns(Request $request)
     {
         $requestOption = [
-            'WheelBrand' => $request->WheelBrand,
+            'VehicleConfiguration' => $request->vehicleConfiguration,
+            'FitmentFilters' => [
+                [
+                    'BoltPattern' => 23
+                ]
+            ],
         ];
 
         return Http::withHeaders(['Content-Type' => 'application/json'])
