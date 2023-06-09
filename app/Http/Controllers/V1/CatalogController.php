@@ -375,6 +375,44 @@ class CatalogController extends Controller
         }
     }
 
+
+    public function getVehicleSize(Request $request){
+        $exactMatch = $request->year . ' ' . $request->make . ' ' . $request->model . ' ' . $request->option;
+        $requestOption = [
+            'Search' => $exactMatch,
+        ];
+
+        //get configID from getdescription endpoint using request
+        $responseGetDesc = Http::withHeaders(['Content-Type' => 'application/json'])
+            ->post("https://api.ridestyler.net/Vehicle/GetDescriptions?Token=" . $this->vehicleToken, $requestOption)->json();
+        $configID = [
+            'VehicleConfiguration' => collect($responseGetDesc['Descriptions'])->pluck('ConfigurationID')->implode(',')
+        ];
+
+
+        $getTireOptDetails = Http::withHeaders(['Content-Type' => 'application/json'])
+            ->post("https://api.ridestyler.net/Vehicle/GetTireOptionDetails?Token=" . $this->vehicleToken, $configID)->json();
+
+
+
+        $size = collect($getTireOptDetails['Details'])->map(function($detail){
+            return [
+                $detail['Front']['Size']
+            ];
+        });
+        return $size;
+
+        // $size = collect($getTireOptDetails['Details'][0]['Front'])->pluck('Size')->toArray();
+        
+
+        // $options = collect($response['Configurations'])->pluck('VehicleConfigurationName')->toArray();
+        // return response()->json(['Options' => $options]);
+
+        return response()->json(['Size' => $size]);
+
+
+    }
+
     public function getBoltPatterns(Request $request)
     {
         $requestOption = [
