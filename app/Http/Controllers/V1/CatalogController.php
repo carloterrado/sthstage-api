@@ -33,7 +33,14 @@ class CatalogController extends Controller
 
     public function getWheels(Request $request)
     {
-
+        $bearerToken = request()->bearerToken();
+        
+        $tokenId = (new Parser(new JoseEncoder()))->parse($bearerToken)->claims()
+            ->all()['jti'];
+        $client = Token::find($tokenId)->client;
+        $excludeColumns = json_decode($client->catalog_column_settings);
+        $additionalColumnsToExclude = ['updated_at', 'created_at'];
+        $tableColumns = Schema::getColumnListing('catalog');
 
         if ((!$request->has('wheel_diameter') && !$request->has('wheel_width')) && ($request->has('brand') || $request->has('mspn'))) {
             // return $catalog_key;
@@ -46,9 +53,10 @@ class CatalogController extends Controller
                 ->when($request->has('mspn'), function ($query) use ($request) {
                     $query->where('mspn', $request->mspn);
                 })
+                ->select(array_diff($tableColumns,array_merge($excludeColumns, $additionalColumnsToExclude)))
                 ->get();
 
-            return response()->json($data);
+            return response()->json(['data' => $data]);
         }
 
         if ($request->has('wheel_diameter') && $request->has('wheel_width')) {
@@ -63,8 +71,9 @@ class CatalogController extends Controller
                 ->when($request->has('mspn'), function ($query) use ($request) {
                     $query->where('mspn', $request->mspn);
                 })
+                ->select(array_diff($tableColumns,array_merge($excludeColumns, $additionalColumnsToExclude)))
                 ->get();
-            return response()->json($data);
+            return response()->json(['data' => $data]);
         }
 
         return response()->json([
@@ -100,7 +109,7 @@ class CatalogController extends Controller
             ->select(array_diff($tableColumns,array_merge($excludeColumns, $additionalColumnsToExclude)))
             ->get();
 
-            return response()->json($data);
+            return response()->json(['data' => $data]);
         }
 
         if ($request->has('section_width') && $request->has('aspect_ratio') && $request->has('rim_diameter')) {
@@ -118,7 +127,7 @@ class CatalogController extends Controller
                 })
                 ->select(array_diff($tableColumns,array_merge($excludeColumns, $additionalColumnsToExclude)))
                 ->get();
-            return response()->json($data);
+            return response()->json(['data' => $data]);
         }
 
 
@@ -248,7 +257,7 @@ class CatalogController extends Controller
 
         $response = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetTireOptionDetails?Token=" . $this->vehicleToken, $requestOption)->json();
-        return response()->json($response);
+       
         $details = collect($response['Details'])->map(function ($detail) {
             return [
                 'Width' => $detail['Front']['Width'],
@@ -256,6 +265,15 @@ class CatalogController extends Controller
                 'InsideDiameter' => $detail['Front']['InsideDiameter'],
             ];
         });
+
+        $bearerToken = request()->bearerToken();
+        $tokenId = (new Parser(new JoseEncoder()))->parse($bearerToken)->claims()
+            ->all()['jti'];
+        $client = Token::find($tokenId)->client;
+        $excludeColumns = json_decode($client->catalog_column_settings);
+        $additionalColumnsToExclude = ['updated_at', 'created_at'];
+        $tableColumns = Schema::getColumnListing('catalog');
+      
 
         $data = DB::table('catalog')
             ->whereIn('section_width', $details->pluck('Width'))
@@ -267,9 +285,10 @@ class CatalogController extends Controller
             ->when($request->has('mspn'), function ($query) use ($request) {
                 $query->where('mspn', $request->mspn);
             })
+            ->select(array_diff($tableColumns,array_merge($excludeColumns, $additionalColumnsToExclude)))
             ->get();
 
-        return response()->json($data);
+        return response()->json(['data' => $data]);
     }
 
     public function getWheelsByVehicle(Request $request)
