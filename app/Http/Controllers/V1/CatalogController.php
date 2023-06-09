@@ -224,7 +224,7 @@ class CatalogController extends Controller
         $response = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetConfigurations?Token=" . $this->vehicleToken, $requestOption)->json();
 
-      
+
         $options = collect($response['Configurations'])->pluck('VehicleConfigurationName')->toArray();
         return response()->json(['Options' => $options]);
     }
@@ -239,7 +239,7 @@ class CatalogController extends Controller
 
         $response = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetTireOptionDetails?Token=" . $this->vehicleToken, $requestOption)->json();
-
+        return response()->json($response);
         $details = collect($response['Details'])->map(function ($detail) {
             return [
                 'Width' => $detail['Front']['Width'],
@@ -263,6 +263,90 @@ class CatalogController extends Controller
         return response()->json($data);
     }
 
+    public function getWheelsByVehicle(Request $request)
+    {
+        //needed request
+        $exactMatch = $request->year . ' ' . $request->make . ' ' . $request->model . ' ' . $request->option;
+        $requestOption = [
+            'Search' => $exactMatch
+        ];
+
+        //get configID from getdescription endpoint using request
+        $responseGetDesc = Http::withHeaders(['Content-Type' => 'application/json'])
+            ->post("https://api.ridestyler.net/Vehicle/GetDescriptions?Token=" . $this->vehicleToken, $requestOption)->json();
+        $configID = [
+            'VehicleConfiguration' => collect($responseGetDesc['Descriptions'])->pluck('ConfigurationID')->implode(',')
+        ];
+      
+        
+        $getFitments = Http::withHeaders(['Content-Type' => 'application/json'])
+            ->post("https://api.ridestyler.net/Vehicle/GetFitments?Token=" . $this->vehicleToken, $configID)->json();
+           
+            // $fitmentBoltPatternID = [
+            //     'VehicleFitment_BoltPatternID' => collect($getFitments['Fitments'])->pluck('VehicleFitment_BoltPatternID')->implode(',')
+            // ];
+         
+
+            // $fitmentBoltPatternID = collect($getFitments['Fitments'])->map(function ($fitment) {
+            //     return [
+            //         'VehicleFitment_BoltPatternID' => $fitment['VehicleFitment_BoltPatternID'],
+            //     ];
+            // })->first();
+   
+            // return $fitmentBoltPatternID;
+            // $boltPatternOption = [
+            //     'VehicleConfiguration' => $configID['VehicleConfiguration'],
+            //     // 'FitmentFilters' => [
+                    
+            //     //     // 'BoltPattern' => 23,
+            //     //     'Offset' =>46.0
+                       
+            //     // ]
+            // ];
+
+
+
+
+        //getboltpatterns, fitments, tireoption using configID
+        $getBoltPatterns = Http::withHeaders(['Content-Type' => 'application/json'])
+            ->post("https://api.ridestyler.net/Wheel/GetBoltPatterns?Token=" . $this->vehicleToken, $configID)->json();
+
+            return $getBoltPatterns;
+
+        $getTireOptDetails = Http::withHeaders(['Content-Type' => 'application/json'])
+            ->post("https://api.ridestyler.net/Vehicle/GetTireOptionDetails?Token=" . $this->vehicleToken, $configID)->json();
+        
+        //get inside diameter from gettireoptiondetails
+        $insideDiameter = $insideDiameter = $getTireOptDetails['Details'][0]['Front']['InsideDiameter'];
+        
+
+        //get the details needed
+        $details = [
+            'Fitments' => collect($getFitments['Fitments'])->map(function($detail) {
+                return [
+                    'VehicleFitment_BoltPatternID' => $detail['VehicleFitment_BoltPatternID'],
+                    'VehicleFitmentHub' => $detail['VehicleFitmentHub'],
+                    'VehicleFitmentWidthMin' => $detail['VehicleFitmentWidthMin'],
+                    'VehicleFitmentWidthMax' => $detail['VehicleFitmentWidthMax'],
+                    'VehicleFitmentOffsetMin' => $detail['VehicleFitmentOffsetMin'],
+                    'VehicleFitmentOffsetMax' => $detail['VehicleFitmentOffsetMax'],
+                ];
+            }),
+            'BoltPatterns' => collect($getBoltPatterns['BoltPatterns'])->map(function($detail) {
+                return [
+                    'BoltPatternSpacingMM' => $detail['BoltPatternSpacingMM'],
+                    'BoltPatternBoltCount' => $detail['BoltPatternBoltCount']
+                ];
+            }),
+
+            'InsideDiameter' => $insideDiameter
+        ];
+
+
+
+
+        return response()->json($details);
+    }
 
     public function getBoltPatterns(Request $request)
     {
