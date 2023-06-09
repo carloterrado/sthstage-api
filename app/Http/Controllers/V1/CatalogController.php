@@ -282,36 +282,12 @@ class CatalogController extends Controller
         $getFitments = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetFitments?Token=" . $this->vehicleToken, $configID)->json();
            
-            // $fitmentBoltPatternID = [
-            //     'VehicleFitment_BoltPatternID' => collect($getFitments['Fitments'])->pluck('VehicleFitment_BoltPatternID')->implode(',')
-            // ];
-         
-
-            // $fitmentBoltPatternID = collect($getFitments['Fitments'])->map(function ($fitment) {
-            //     return [
-            //         'VehicleFitment_BoltPatternID' => $fitment['VehicleFitment_BoltPatternID'],
-            //     ];
-            // })->first();
-   
-            // return $fitmentBoltPatternID;
-            // $boltPatternOption = [
-            //     'VehicleConfiguration' => $configID['VehicleConfiguration'],
-            //     // 'FitmentFilters' => [
-                    
-            //     //     // 'BoltPattern' => 23,
-            //     //     'Offset' =>46.0
-                       
-            //     // ]
-            // ];
-
-
-
 
         //getboltpatterns, fitments, tireoption using configID
         $getBoltPatterns = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Wheel/GetBoltPatterns?Token=" . $this->vehicleToken, $configID)->json();
 
-            return $getBoltPatterns;
+            // return $getBoltPatterns;
 
         $getTireOptDetails = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetTireOptionDetails?Token=" . $this->vehicleToken, $configID)->json();
@@ -332,12 +308,11 @@ class CatalogController extends Controller
                     'VehicleFitmentOffsetMax' => $detail['VehicleFitmentOffsetMax'],
                 ];
             }),
-            'BoltPatterns' => collect($getBoltPatterns['BoltPatterns'])->map(function($detail) {
-                return [
-                    'BoltPatternSpacingMM' => $detail['BoltPatternSpacingMM'],
-                    'BoltPatternBoltCount' => $detail['BoltPatternBoltCount']
-                ];
-            }),
+            'BoltPatterns' =>
+                [
+                    'BoltPatternSpacingMM' =>$getBoltPatterns['BoltPatterns'][1]['BoltPatternSpacingMM'],
+                    'BoltPatternBoltCount' => $getBoltPatterns['BoltPatterns'][1]['BoltPatternBoltCount']
+                ],
 
             'InsideDiameter' => $insideDiameter
         ];
@@ -345,7 +320,17 @@ class CatalogController extends Controller
 
 
 
-        return response()->json($details);
+        $catalog = DB::table('catalog')
+            ->where('center_bore', '>=', $getFitments['Fitments'][0]['VehicleFitmentHub'])
+            ->whereBetween('wheel_width', [$getFitments['Fitments'][0]['VehicleFitmentWidthMin'], $getFitments['Fitments'][0]['VehicleFitmentWidthMax']])
+            ->whereBetween('offset', [$getFitments['Fitments'][0]['VehicleFitmentOffsetMin'], $getFitments['Fitments'][0]['VehicleFitmentOffsetMax']])
+            ->where('bolt_circle_diameter_1', '=', $getBoltPatterns['BoltPatterns'][1]['BoltPatternSpacingMM'])
+            ->where('bolt_pattern_1', '=', $getBoltPatterns['BoltPatterns'][1]['BoltPatternBoltCount'])
+            ->where('wheel_diameter', '=', $insideDiameter)
+            ->get();
+
+
+        return response()->json($catalog);
     }
 
     public function getBoltPatterns(Request $request)
