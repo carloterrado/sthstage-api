@@ -60,6 +60,12 @@ class CatalogController extends Controller
         }
 
         if ($request->has('wheel_diameter') && $request->has('wheel_width')) {
+
+            $request->validate([
+                'wheel_diameter' => 'required|numeric',
+                'wheel_width' => 'required|numeric',
+            ]);
+
             $data = DB::table('catalog')
                 ->where([
                     'wheel_diameter' => $request->wheel_diameter,
@@ -113,6 +119,12 @@ class CatalogController extends Controller
         }
 
         if ($request->has('section_width') && $request->has('aspect_ratio') && $request->has('rim_diameter')) {
+
+            $request->validate([
+                'section_width' => 'required|numeric',
+                'rim_diameter' => 'required|numeric',
+            ]);
+
             $data = DB::table('catalog')
                 ->where([
                     'section_width' => $request->section_width,
@@ -142,21 +154,26 @@ class CatalogController extends Controller
     {
         if ($request->has('brand') && $request->has('mspn')) {
 
+            $request->validate([
+                'brand' => 'required',
+                'mspn' => 'required|integer'
+            ]);
+
             $data = DB::table('inventory_feed AS i')
                 ->select(
                     'i.brand',
                     'i.part_number',
-                    'i.vendor_main_id',
+                    // 'i.vendor_main_id',
                     'i.store_location_id',
                     'n.netnet',
                     'i.qty',
                 )
                 ->join('netnet_price AS n', function ($join) {
                     $join->on('n.brand', '=', 'i.brand')
-                        ->on('n.mspn', '=', 'i.part_number')
-                        ->on('n.vendor', '=', 'i.vendor_main_id');
+                        ->on('n.mspn', '=', 'i.part_number');
+                        // ->on('n.vendor', '=', 'i.vendor_main_id');
                 })
-                ->join(DB::raw('(SELECT MIN(id) as min_id FROM netnet_price GROUP BY brand, mspn, vendor) AS sub'), function ($join) {
+                ->join(DB::raw('(SELECT MIN(id) as min_id FROM netnet_price GROUP BY brand, mspn) AS sub'), function ($join) {
                     $join->on('n.id', '=', 'sub.min_id');
                 })
                 ->where('i.part_number', $request->mspn)
@@ -177,6 +194,11 @@ class CatalogController extends Controller
     public function getLocation(Request $request)
     {
         if ($request->has('location_id')) {
+
+            $request->validate([
+                'location_id' => 'required|integer'
+            ]);
+
             $data = DB::table('store_location')
                 ->where('id', $request->get('location_id'))
                 ->get();
@@ -200,9 +222,14 @@ class CatalogController extends Controller
 
     public function getVehicleByMakes(Request $request)
     {
+
         $requestYear = [
             'Year' => $request->year
         ];
+
+        $request->validate([
+            'year' => 'required|integer'
+        ]);
 
         $response = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetMakes?Token=" . $this->vehicleToken, $requestYear)
@@ -222,6 +249,11 @@ class CatalogController extends Controller
             'MakeName' => $request->make
         ];
 
+        $request->validate([
+            'year' => 'required|integer',
+            'make' => 'required'
+        ]);
+
         $response = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetModels?Token=" . $this->vehicleToken, $requestYear)->json();
 
@@ -240,6 +272,12 @@ class CatalogController extends Controller
             'ModelName' => $request->model
         ];
 
+        $request->validate([
+            'year' => 'required|integer',
+            'make' => 'required',
+            'model' => 'required'
+        ]);
+
         $response = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetDescriptions?Token=" . $this->vehicleToken, $requestOption)->json();
 
@@ -250,6 +288,14 @@ class CatalogController extends Controller
 
     public function getTiresByVehicle(Request $request)
     {
+
+        $request->validate([
+            'year' => 'required|integer',
+            'make' => 'required',
+            'model' => 'required',
+            'option' => 'required'
+        ]);
+
         $exactMatch = $request->year . ' ' . $request->make . ' ' . $request->model . ' ' . $request->option;
         $requestOption = [
             'Search' => $exactMatch,
@@ -292,6 +338,12 @@ class CatalogController extends Controller
 
     public function getWheelsByVehicle(Request $request)
     {
+        $request->validate([
+            'year' => 'required|integer',
+            'make' => 'required',
+            'model' => 'required',
+            'option' => 'required'
+        ]);
         //needed request
         $exactMatch = $request->year . ' ' . $request->make . ' ' . $request->model . ' ' . $request->option;
         $requestOption = [
@@ -353,6 +405,14 @@ class CatalogController extends Controller
 
 
     public function getVehicleSize(Request $request){
+
+        $request->validate([
+            'year' => 'required|integer',
+            'make' => 'required',
+            'model' => 'required',
+            'option' => 'required'
+        ]);
+
         $exactMatch = $request->year . ' ' . $request->make . ' ' . $request->model . ' ' . $request->option;
         $requestOption = [
             'Search' => $exactMatch,
