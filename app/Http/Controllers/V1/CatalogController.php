@@ -362,9 +362,6 @@ class CatalogController extends Controller
         $configID = [
             'VehicleConfiguration' => collect($responseGetDesc['Descriptions'])->pluck('ConfigurationID')->implode(',')
         ];
-        $responseGetFitment = Http::withHeaders(['Content-Type' => 'application/json'])
-        ->post("https://api.ridestyler.net/Vehicle/GetFitments?Token=" . $this->vehicleToken, $requestOption)->json();
-
 
         $getTireOptDetails = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetTireOptionDetails?Token=" . $this->vehicleToken, $configID)->json();
@@ -373,7 +370,7 @@ class CatalogController extends Controller
             ->post("https://api.ridestyler.net/Vehicle/GetFitments?Token=" . $this->vehicleToken, $configID)->json();
 
 
-        
+        //for get wheel size
         $wheelArr = [];
         for($i = $getFitments['Fitments'][0]['VehicleFitmentWidthMin']; $i <= $getFitments['Fitments'][0]['VehicleFitmentWidthMax']; $i += 0.5 ){
             $str = $getTireOptDetails['Details'][0]['Front']['InsideDiameter'] . 'x' . $i;
