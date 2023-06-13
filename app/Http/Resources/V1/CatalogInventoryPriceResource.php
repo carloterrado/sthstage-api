@@ -22,17 +22,18 @@ class CatalogInventoryPriceResource extends JsonResource
 
             //pass sa $existingdata array kapag may duplicated vendor_main_id value
             $existingData = array_filter($formattedData, function ($combinedData) use ($data) {
-                return $combinedData['vendor_main_id'] === $data->vendor_main_id;
+                return $combinedData['brand'] === $data->brand && $combinedData['mspn'] === $data->part_number;
             });
 
         
+            // return $formattedData;
             if (empty($existingData)) {
 
                 //add ganto pag walang laman si $existingdata
                 $formattedData[] = [
                     'brand' => $data->brand,
                     'mspn' => $data->part_number,
-                    'vendor_main_id' => $data->vendor_main_id,
+                    // 'vendor_main_id' => $data->vendor_main_id,
                     'location' => [
                         [
                             'store_location_id' => $data->store_location_id,
@@ -57,13 +58,13 @@ class CatalogInventoryPriceResource extends JsonResource
 
 
         //remove vendor_main_id sa response
-        $responseData = array_map(function ($data) {
-            unset($data['vendor_main_id']);
-            return $data;
-        }, $formattedData);
+        // $responseData = array_map(function ($data) {
+        //     unset($data['vendor_main_id']);
+        //     return $data;
+        // }, $formattedData);
         
         
-        return $responseData;
+        return $formattedData;
 
     }
 }
