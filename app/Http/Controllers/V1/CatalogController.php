@@ -342,25 +342,6 @@ class CatalogController extends Controller
             ->select(array_diff($tableColumns,array_merge($excludeColumns, $additionalColumnsToExclude)))
             ->get();
 
-        //get the details needed
-        // $data = [
-        //     'Fitments' => collect($getFitments['Fitments'])->map(function($detail) {
-        //         return [
-        //             'VehicleFitment_BoltPatternID' => $detail['VehicleFitment_BoltPatternID'],
-        //             'VehicleFitmentHub' => $detail['VehicleFitmentHub'],
-        //             'VehicleFitmentWidthMin' => $detail['VehicleFitmentWidthMin'],
-        //             'VehicleFitmentWidthMax' => $detail['VehicleFitmentWidthMax'],
-        //             'VehicleFitmentOffsetMin' => $detail['VehicleFitmentOffsetMin'],
-        //             'VehicleFitmentOffsetMax' => $detail['VehicleFitmentOffsetMax'],
-        //         ];
-        //     }),
-        //     'BoltPatterns' => collect($getBoltPatterns['BoltPatterns'])->map(function($detail) {
-        //         return [
-        //             'BoltPatternSpacingMM' => $detail['BoltPatternSpacingMM'],
-        //             'BoltPatternBoltCount' => $detail['BoltPatternBoltCount']
-        //         ];
-        //     }),
-        // ];
             
         
 
