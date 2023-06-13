@@ -260,11 +260,14 @@ class CatalogController extends Controller
        
         $details = collect($response['Details'])->map(function ($detail) {
             return [
-                'Width' => $detail['Front']['Width'],
-                'AspectRatio' => $detail['Front']['AspectRatio'],
-                'InsideDiameter' => $detail['Front']['InsideDiameter'],
+                'full_size' => $detail['Front']['Size'],
             ];
         });
+        $filteredSize = $details->filter(function ($detail) use ($request) {
+            return $detail['full_size'] === $request->size;
+        })->values();
+   
+
 
         $bearerToken = request()->bearerToken();
         $tokenId = (new Parser(new JoseEncoder()))->parse($bearerToken)->claims()
@@ -276,15 +279,11 @@ class CatalogController extends Controller
       
 
         $data = DB::table('catalog')
-            ->whereIn('section_width', $details->pluck('Width'))
-            ->whereIn('aspect_ratio', $details->pluck('AspectRatio'))
-            ->whereIn('rim_diameter', $details->pluck('InsideDiameter'))
-            ->when($request->has('brand'), function ($query) use ($request) {
-                $query->where('brand', $request->brand);
-            })
-            ->when($request->has('mspn'), function ($query) use ($request) {
-                $query->where('mspn', $request->mspn);
-            })
+            // ->whereIn('section_width', $details->pluck('Width'))
+            // ->whereIn('aspect_ratio', $details->pluck('AspectRatio'))
+            // ->whereIn('rim_diameter', $details->pluck('InsideDiameter'))
+            ->whereIn('full_size', $filteredSize->pluck('full_size'))
+
             ->select(array_diff($tableColumns,array_merge($excludeColumns, $additionalColumnsToExclude)))
             ->get();
 
