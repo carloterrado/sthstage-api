@@ -42,8 +42,7 @@ Route::prefix('v1/catalog')->middleware('auth:api')->group(function () {
     Route::get('vehicle/size', [CatalogController::class, 'getVehicleSize']);
     Route::get('vehicle/tires', [CatalogController::class, 'getTiresByVehicle']);
     Route::get('vehicle/wheels', [CatalogController::class, 'getWheelsByVehicle']);
-    Route::get('vehicle/bolt-pattern', [CatalogController::class, 'getBoltPatterns']);
-    Route::get('vehicle/fitments', [CatalogController::class, 'getFitments']);
+   
 
 
     // GET ORDER STATUS

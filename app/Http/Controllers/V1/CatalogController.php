@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Validator;
 use Laravel\Passport\Token;
 use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Encoding\JoseEncoder;
@@ -60,6 +61,14 @@ class CatalogController extends Controller
         }
 
         if ($request->has('wheel_diameter') && $request->has('wheel_width')) {
+
+            $rules = [
+                'wheel_diameter' => 'required|numeric',
+                'wheel_width' => 'required|numeric',
+            ];
+        
+            $validatedData = $request->validate($rules);
+
             $data = DB::table('catalog')
                 ->where([
                     'wheel_diameter' => $request->wheel_diameter,
@@ -113,6 +122,15 @@ class CatalogController extends Controller
         }
 
         if ($request->has('section_width') && $request->has('aspect_ratio') && $request->has('rim_diameter')) {
+
+            $rules = [
+                'section_width' => 'required|numeric',
+                'aspect_ratio' => 'required|numeric',
+                'rim_diameter' => 'required|numeric',
+            ];
+        
+            $validatedData = $request->validate($rules);
+
             $data = DB::table('catalog')
                 ->where([
                     'section_width' => $request->section_width,
@@ -196,10 +214,15 @@ class CatalogController extends Controller
             ->post("https://api.ridestyler.net/Vehicle/GetYears?Token=" . $this->vehicleToken)
             ->json();
     }
-
+ 
 
     public function getVehicleByMakes(Request $request)
     {
+        
+        $request->validate([
+            'year' => 'required',
+            // 'make' => 'required',
+        ]);
         $requestYear = [
             'Year' => $request->year
         ];
@@ -217,6 +240,11 @@ class CatalogController extends Controller
 
     public function getVehicleByModels(Request $request)
     {
+        $request->validate([
+            'year' => 'required|integer',
+            'make' => 'required',
+        ]);
+       
         $requestYear = [
             'Year' => $request->year,
             'MakeName' => $request->make
@@ -231,9 +259,9 @@ class CatalogController extends Controller
         return response()->json(['Models' => $models]);
     }
 
-
     public function getVehicleConfigurations(Request $request)
     {
+        
         $requestOption = [
             'Year' => $request->year,
             'MakeName' => $request->make,
@@ -247,9 +275,61 @@ class CatalogController extends Controller
         return response()->json(['Options' => $options]);
     }
 
+    public function getVehicleSize(Request $request){
+
+      
+
+        $exactMatch = $request->year . ' ' . $request->make . ' ' . $request->model . ' ' . $request->option;
+        $requestOption = [
+            'Search' => $exactMatch,
+        ];
+
+        //get configID from getdescription endpoint using request
+        $responseGetDesc = Http::withHeaders(['Content-Type' => 'application/json'])
+            ->post("https://api.ridestyler.net/Vehicle/GetDescriptions?Token=" . $this->vehicleToken, $requestOption)->json();
+        $configID = [
+            'VehicleConfiguration' => collect($responseGetDesc['Descriptions'])->pluck('ConfigurationID')->implode(',')
+        ];
+
+        $getTireOptDetails = Http::withHeaders(['Content-Type' => 'application/json'])
+            ->post("https://api.ridestyler.net/Vehicle/GetTireOptionDetails?Token=" . $this->vehicleToken, $configID)->json();
+
+        $getFitments = Http::withHeaders(['Content-Type' => 'application/json'])
+            ->post("https://api.ridestyler.net/Vehicle/GetFitments?Token=" . $this->vehicleToken, $configID)->json();
+
+
+        //for get wheel size
+        $wheelArr = [];
+        for($i = $getFitments['Fitments'][0]['VehicleFitmentWidthMin']; $i <= $getFitments['Fitments'][0]['VehicleFitmentWidthMax']; $i += 0.5 ){
+            $str = $getTireOptDetails['Details'][0]['Front']['InsideDiameter'] . 'x' . $i;
+            array_push($wheelArr , $str);
+        }
+
+        $response = [
+            'Size' => [
+                'Tires' => collect($getTireOptDetails['Details'])->pluck('Front.Size'),
+                'Wheels' => $wheelArr,
+            ]
+            
+        ];
+
+        return response()->json($response);
+
+
+    }
+
 
     public function getTiresByVehicle(Request $request)
     {
+       $request->validate([
+            'year' => 'required|integer',
+            'make' => 'required',
+            'model' => 'required',
+            'option' => 'required',
+            'size' => 'required',
+        ]);
+        
+
         $exactMatch = $request->year . ' ' . $request->make . ' ' . $request->model . ' ' . $request->option;
         $requestOption = [
             'Search' => $exactMatch,
@@ -292,6 +372,15 @@ class CatalogController extends Controller
 
     public function getWheelsByVehicle(Request $request)
     {
+
+       $validator =  $request->validate([
+            'year' => 'required|integer',
+            'make' => 'required',
+            'model' => 'required',
+            'option' => 'required',
+            'size' => 'required',
+        ]);
+        
         //needed request
         $exactMatch = $request->year . ' ' . $request->make . ' ' . $request->model . ' ' . $request->option;
         $requestOption = [
@@ -344,79 +433,7 @@ class CatalogController extends Controller
             ->select(array_diff($tableColumns,array_merge($excludeColumns, $additionalColumnsToExclude)))
             ->get();
 
-            
-        
-
-
         return response()->json(['data' => $catalog]);
-    }
-
-
-    public function getVehicleSize(Request $request){
-        $exactMatch = $request->year . ' ' . $request->make . ' ' . $request->model . ' ' . $request->option;
-        $requestOption = [
-            'Search' => $exactMatch,
-        ];
-
-        //get configID from getdescription endpoint using request
-        $responseGetDesc = Http::withHeaders(['Content-Type' => 'application/json'])
-            ->post("https://api.ridestyler.net/Vehicle/GetDescriptions?Token=" . $this->vehicleToken, $requestOption)->json();
-        $configID = [
-            'VehicleConfiguration' => collect($responseGetDesc['Descriptions'])->pluck('ConfigurationID')->implode(',')
-        ];
-
-        $getTireOptDetails = Http::withHeaders(['Content-Type' => 'application/json'])
-            ->post("https://api.ridestyler.net/Vehicle/GetTireOptionDetails?Token=" . $this->vehicleToken, $configID)->json();
-
-        $getFitments = Http::withHeaders(['Content-Type' => 'application/json'])
-            ->post("https://api.ridestyler.net/Vehicle/GetFitments?Token=" . $this->vehicleToken, $configID)->json();
-
-
-        //for get wheel size
-        $wheelArr = [];
-        for($i = $getFitments['Fitments'][0]['VehicleFitmentWidthMin']; $i <= $getFitments['Fitments'][0]['VehicleFitmentWidthMax']; $i += 0.5 ){
-            $str = $getTireOptDetails['Details'][0]['Front']['InsideDiameter'] . 'x' . $i;
-            array_push($wheelArr , $str);
-        }
-
-        $response = [
-            'Size' => [
-                'Tires' => collect($getTireOptDetails['Details'])->pluck('Front.Size'),
-                'Wheels' => $wheelArr,
-            ]
-            
-        ];
-
-        return response()->json($response);
-
-
-    }
-
-
-
-    public function getBoltPatterns(Request $request)
-    {
-        $requestOption = [
-            'VehicleConfiguration' => $request->vehicleConfiguration,
-            'FitmentFilters' => [
-                [
-                    'BoltPattern' => 23
-                ]
-            ],
-        ];
-
-        return Http::withHeaders(['Content-Type' => 'application/json'])
-            ->post("https://api.ridestyler.net/Wheel/GetBoltPatterns?Token=" . $this->vehicleToken, $requestOption)->json();
-    }
-
-
-    public function getFitments(Request $request)
-    {
-        $requestOption = [
-            "VehicleConfiguration" => $request->VehicleConfiguration
-        ];
-        return Http::withHeaders(['Content-Type' => 'application/json'])
-            ->post("https://api.ridestyler.net/Vehicle/GetFitments?Token=" . $this->vehicleToken, $requestOption)->json();
     }
 
 
