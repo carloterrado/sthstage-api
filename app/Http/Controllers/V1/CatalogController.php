@@ -323,6 +323,8 @@ class CatalogController extends Controller
         //get inside diameter from gettireoptiondetails
         $insideDiameter = $getTireOptDetails['Details'][0]['Front']['InsideDiameter'];
 
+        // return $insideDiameter;
+
         $bearerToken = request()->bearerToken();
         
         $tokenId = (new Parser(new JoseEncoder()))->parse($bearerToken)->claims()
@@ -339,6 +341,7 @@ class CatalogController extends Controller
             ->where('bolt_circle_diameter_1', '=', $getBoltPatterns['BoltPatterns'][1]['BoltPatternSpacingMM'])
             ->where('bolt_pattern_1', '=', $getBoltPatterns['BoltPatterns'][1]['BoltPatternBoltCount'])
             ->where('wheel_diameter', '=', $insideDiameter)
+            ->where('full_size', $request->size)
             ->select(array_diff($tableColumns,array_merge($excludeColumns, $additionalColumnsToExclude)))
             ->get();
 
