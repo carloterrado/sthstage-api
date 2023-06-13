@@ -309,49 +309,44 @@ class CatalogController extends Controller
         
         $getFitments = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetFitments?Token=" . $this->vehicleToken, $configID)->json();
-            return $getFitments;
-
-
+            // return $getFitments;
 
         //getboltpatterns, fitments, tireoption using configID
         $getBoltPatterns = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Wheel/GetBoltPatterns?Token=" . $this->vehicleToken, $configID)->json();
 
-            return $getBoltPatterns;
+            // return $getBoltPatterns;
 
         $getTireOptDetails = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetTireOptionDetails?Token=" . $this->vehicleToken, $configID)->json();
         
         //get inside diameter from gettireoptiondetails
-        $insideDiameter = $insideDiameter = $getTireOptDetails['Details'][0]['Front']['InsideDiameter'];
+        $insideDiameter = $getTireOptDetails['Details'][0]['Front']['InsideDiameter'];
+
+        $bearerToken = request()->bearerToken();
+        
+        $tokenId = (new Parser(new JoseEncoder()))->parse($bearerToken)->claims()
+            ->all()['jti'];
+        $client = Token::find($tokenId)->client;
+        $excludeColumns = json_decode($client->catalog_column_settings);
+        $additionalColumnsToExclude = ['updated_at', 'created_at'];
+        $tableColumns = Schema::getColumnListing('catalog');
+
+        $catalog = DB::table('catalog')
+            ->where('center_bore', '>=', $getFitments['Fitments'][0]['VehicleFitmentHub'])
+            ->whereBetween('wheel_width', [$getFitments['Fitments'][0]['VehicleFitmentWidthMin'], $getFitments['Fitments'][0]['VehicleFitmentWidthMax']])
+            ->whereBetween('offset', [$getFitments['Fitments'][0]['VehicleFitmentOffsetMin'], $getFitments['Fitments'][0]['VehicleFitmentOffsetMax']])
+            ->where('bolt_circle_diameter_1', '=', $getBoltPatterns['BoltPatterns'][1]['BoltPatternSpacingMM'])
+            ->where('bolt_pattern_1', '=', $getBoltPatterns['BoltPatterns'][1]['BoltPatternBoltCount'])
+            ->where('wheel_diameter', '=', $insideDiameter)
+            ->select(array_diff($tableColumns,array_merge($excludeColumns, $additionalColumnsToExclude)))
+            ->get();
+
+            
         
 
-        //get the details needed
-        $data = [
-            'Fitments' => collect($getFitments['Fitments'])->map(function($detail) {
-                return [
-                    'VehicleFitment_BoltPatternID' => $detail['VehicleFitment_BoltPatternID'],
-                    'VehicleFitmentHub' => $detail['VehicleFitmentHub'],
-                    'VehicleFitmentWidthMin' => $detail['VehicleFitmentWidthMin'],
-                    'VehicleFitmentWidthMax' => $detail['VehicleFitmentWidthMax'],
-                    'VehicleFitmentOffsetMin' => $detail['VehicleFitmentOffsetMin'],
-                    'VehicleFitmentOffsetMax' => $detail['VehicleFitmentOffsetMax'],
-                ];
-            }),
-            'BoltPatterns' => collect($getBoltPatterns['BoltPatterns'])->map(function($detail) {
-                return [
-                    'BoltPatternSpacingMM' => $detail['BoltPatternSpacingMM'],
-                    'BoltPatternBoltCount' => $detail['BoltPatternBoltCount']
-                ];
-            }),
 
-            'InsideDiameter' => $insideDiameter
-        ];
-
-
-
-
-        return response()->json(['data' => $data]);
+        return response()->json(['data' => $catalog]);
     }
 
 
@@ -367,9 +362,6 @@ class CatalogController extends Controller
         $configID = [
             'VehicleConfiguration' => collect($responseGetDesc['Descriptions'])->pluck('ConfigurationID')->implode(',')
         ];
-        $responseGetFitment = Http::withHeaders(['Content-Type' => 'application/json'])
-        ->post("https://api.ridestyler.net/Vehicle/GetFitments?Token=" . $this->vehicleToken, $requestOption)->json();
-
 
         $getTireOptDetails = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetTireOptionDetails?Token=" . $this->vehicleToken, $configID)->json();
@@ -378,17 +370,7 @@ class CatalogController extends Controller
             ->post("https://api.ridestyler.net/Vehicle/GetFitments?Token=" . $this->vehicleToken, $configID)->json();
 
 
-        // $size = collect($getTireOptDetails['Details'])->map(function($detail){
-        //     return [
-        //         'Size' => $detail['Front']['Size'],
-        //         'Width' => $detail['Front']['Width'],
-        //         'AspectRatio' => $detail['Front']['AspectRatio'],
-        //         'InsideDiameter' => $detail['Front']['InsideDiameter']
-        //     ];
-        // });
-
-
-        
+        //for get wheel size
         $wheelArr = [];
         for($i = $getFitments['Fitments'][0]['VehicleFitmentWidthMin']; $i <= $getFitments['Fitments'][0]['VehicleFitmentWidthMax']; $i += 0.5 ){
             $str = $getTireOptDetails['Details'][0]['Front']['InsideDiameter'] . 'x' . $i;
@@ -402,50 +384,6 @@ class CatalogController extends Controller
             ]
             
         ];
-
-// 'size':[
-//     {
-//         'tire': 195/75R15,
-//         'wheels': [
-//             "15x6",
-//             "15x6.5",
-//             "15x7",
-//             "15x7.5",
-//             "15x8"
-//         ]
-//     },
-//     {
-//         'tire': 1205/75R15,
-//         'wheels': [
-//             "15x6",
-//             "15x6.5",
-//             "15x7",
-//             "15x7.5",
-//             "15x8"
-//         ]
-//     },
-// ]
-
-        // $size = collect($getTireOptDetails['Details'])->pluck('Front.Size')->flatten()->toArray();
-                    // $details = [
-            //     'Fitments' => collect($getFitments['Fitments'])->map(function($detail) {
-            //         return [
-            //             'VehicleFitment_BoltPatternID' => $detail['VehicleFitment_BoltPatternID'],
-            //             'VehicleFitmentHub' => $detail['VehicleFitmentHub'],
-            //             'VehicleFitmentWidthMin' => $detail['VehicleFitmentWidthMin'],
-            //             'VehicleFitmentWidthMax' => $detail['VehicleFitmentWidthMax'],
-            //             'VehicleFitmentOffsetMin' => $detail['VehicleFitmentOffsetMin'],
-            //             'VehicleFitmentOffsetMax' => $detail['VehicleFitmentOffsetMax'],
-            //         ];
-            //     }),
-            //     'BoltPatterns' =>
-            //         [
-            //             'BoltPatternSpacingMM' =>$getBoltPatterns['BoltPatterns'][1]['BoltPatternSpacingMM'],
-            //             'BoltPatternBoltCount' => $getBoltPatterns['BoltPatterns'][1]['BoltPatternBoltCount']
-            //         ],
-
-            //     'InsideDiameter' => $insideDiameter
-            // ];
 
         return response()->json($response);
 
