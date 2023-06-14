@@ -175,6 +175,10 @@ class CatalogController extends Controller
             'Year' => $request->year
         ];
 
+        $request->validate([
+            'year' => 'required|integer'
+        ]);
+
         $response = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetMakes?Token=" . $this->vehicleToken, $requestYear)
             ->json();
@@ -198,6 +202,11 @@ class CatalogController extends Controller
             'MakeName' => $request->make
         ];
 
+        $request->validate([
+            'year' => 'required|integer',
+            'make' => 'required'
+        ]);
+
         $response = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetModels?Token=" . $this->vehicleToken, $requestYear)->json();
 
@@ -220,6 +229,12 @@ class CatalogController extends Controller
             'MakeName' => $request->make,
             'ModelName' => $request->model
         ];
+
+        $request->validate([
+            'year' => 'required|integer',
+            'make' => 'required',
+            'model' => 'required'
+        ]);
 
         $response = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetDescriptions?Token=" . $this->vehicleToken, $requestOption)->json();
