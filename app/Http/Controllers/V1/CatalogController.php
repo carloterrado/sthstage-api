@@ -9,11 +9,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Validator;
 use Laravel\Passport\Token;
-use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Encoding\JoseEncoder;
 use Lcobucci\JWT\Token\Parser;
+
+
 
 class CatalogController extends Controller
 {
@@ -46,7 +46,6 @@ class CatalogController extends Controller
         if ((!$request->has('wheel_diameter') && !$request->has('wheel_width')) && ($request->has('brand') || $request->has('mspn'))) {
             // return $catalog_key;
             $data = DB::table('catalog')
-
                 ->where(['category' => 2])
                 ->when($request->has('brand'), function ($query) use ($request) {
                     $query->where('brand', $request->brand);

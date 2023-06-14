@@ -4,7 +4,7 @@ namespace App\Http\Controllers\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\OauthClient;
-
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -154,8 +154,12 @@ class UserController extends Controller
     {
         
         try {
+          
+            $tableColumns = Schema::getColumnListing('catalog');
+            $filteredColumns = array_diff($tableColumns, $request->column);
+       
             OauthClient::where('id', $id)->update([
-                'catalog_column_settings' => json_encode($request->column)
+                'catalog_column_settings' => json_encode(array_values($filteredColumns))
             ]);
 
             return redirect()->route('users')->with('success_message', 'Catalog column access updated successfully!');
