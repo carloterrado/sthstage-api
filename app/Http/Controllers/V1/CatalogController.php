@@ -9,11 +9,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Validator;
 use Laravel\Passport\Token;
-use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Encoding\JoseEncoder;
 use Lcobucci\JWT\Token\Parser;
+
+
 
 class CatalogController extends Controller
 {
@@ -46,7 +46,6 @@ class CatalogController extends Controller
         if ((!$request->has('wheel_diameter') && !$request->has('wheel_width')) && ($request->has('brand') || $request->has('mspn'))) {
             // return $catalog_key;
             $data = DB::table('catalog')
-
                 ->where(['category' => 2])
                 ->when($request->has('brand'), function ($query) use ($request) {
                     $query->where('brand', $request->brand);
@@ -155,62 +154,6 @@ class CatalogController extends Controller
         ], 400);
     }
 
-    //Get inventory price location
-    public function inventoryPrice(Request $request)
-    {
-
-
-        $request->validate([
-            'brand' => 'required',
-            'mspn' => 'required'
-        ]);
-
-        $data = DB::table('inventory_feed AS i')
-            ->select(
-                'i.brand',
-                'i.part_number',
-                // 'i.vendor_main_id',
-                'i.store_location_id',
-                'n.netnet',
-                'i.qty',
-            )
-            ->join('netnet_price AS n', function ($join) {
-                $join->on('n.brand', '=', 'i.brand')
-                    ->on('n.mspn', '=', 'i.part_number');
-                // ->on('n.vendor', '=', 'i.vendor_main_id');
-            })
-            ->join(DB::raw('(SELECT MIN(id) as min_id FROM netnet_price GROUP BY brand, mspn) AS sub'), function ($join) {
-                $join->on('n.id', '=', 'sub.min_id');
-            })
-            ->where('i.part_number', $request->mspn)
-            ->where('i.brand', $request->brand)
-            ->get();
-
-
-
-        return  CatalogInventoryPriceResource::make($data);
-    }
-
-
-    public function getLocation(Request $request)
-    {
-        if ($request->has('location_id')) {
-
-            $request->validate([
-                'location_id' => 'required|integer'
-            ]);
-
-            $data = DB::table('store_location')
-                ->where('id', $request->get('location_id'))
-                ->get();
-        } else {
-            $data = DB::table('store_location')
-                ->get();
-        }
-
-        return CatalogVendorLocationResource::collection($data);
-    }
-
 
     public function getVehicleYear()
     {
@@ -275,6 +218,11 @@ class CatalogController extends Controller
 
     public function getVehicleConfigurations(Request $request)
     {
+        $request->validate([
+            'year' => 'required|integer',
+            'make' => 'required',
+            'model' => 'required',
+        ]);
 
         $requestOption = [
             'Year' => $request->year,
@@ -302,7 +250,7 @@ class CatalogController extends Controller
             'year' => 'required|integer',
             'make' => 'required',
             'model' => 'required',
-            'option' => 'required'
+            'option' => 'required',
         ]);
 
         $exactMatch = $request->year . ' ' . $request->make . ' ' . $request->model . ' ' . $request->option;
@@ -460,6 +408,58 @@ class CatalogController extends Controller
         return response()->json(['data' => $catalog]);
     }
 
+    //Get inventory price location
+    public function inventoryPrice(Request $request)
+    {
+        $request->validate([
+            'brand' => 'required',
+            'mspn' => 'required',
+        ]);
+
+
+        $data = DB::table('inventory_feed AS i')
+            ->select(
+                'i.brand',
+                'i.part_number',
+                'i.vendor_main_id',
+                'i.store_location_id',
+                'n.netnet',
+                'i.qty',
+            )
+            ->join('netnet_price AS n', function ($join) {
+                $join->on('n.brand', '=', 'i.brand')
+                    ->on('n.mspn', '=', 'i.part_number')
+                    ->on('n.vendor', '=', 'i.vendor_main_id');
+            })
+            ->join(DB::raw('(SELECT MIN(id) as min_id FROM netnet_price GROUP BY brand, mspn, vendor) AS sub'), function ($join) {
+                $join->on('n.id', '=', 'sub.min_id');
+            })
+            ->where('i.part_number', $request->mspn)
+            ->where('i.brand', $request->brand)
+            ->get();
+
+
+
+
+        return  CatalogInventoryPriceResource::make($data);
+
+
+    }
+
+
+    public function getLocation(Request $request)
+    {
+        if ($request->has('location_id')) {
+            $data = DB::table('store_location')
+                ->where('id', $request->get('location_id'))
+                ->get();
+        } else {
+            $data = DB::table('store_location')
+                ->get();
+        }
+
+        return CatalogVendorLocationResource::collection($data);
+    }
 
     public function getOrderStatus(Request $request)
     {
