@@ -35,7 +35,7 @@ class CatalogController extends Controller
     public function getWheels(Request $request)
     {
         $bearerToken = request()->bearerToken();
-        
+
         $tokenId = (new Parser(new JoseEncoder()))->parse($bearerToken)->claims()
             ->all()['jti'];
         $client = Token::find($tokenId)->client;
@@ -53,7 +53,7 @@ class CatalogController extends Controller
                 ->when($request->has('mspn'), function ($query) use ($request) {
                     $query->where('mspn', $request->mspn);
                 })
-                ->select(array_diff($tableColumns,array_merge($excludeColumns, $additionalColumnsToExclude)))
+                ->select(array_diff($tableColumns, array_merge($excludeColumns, $additionalColumnsToExclude)))
                 ->get();
 
             return response()->json(['data' => $data]);
@@ -65,7 +65,7 @@ class CatalogController extends Controller
                 'wheel_diameter' => 'required|numeric',
                 'wheel_width' => 'required|numeric',
             ];
-        
+
             $validatedData = $request->validate($rules);
 
             $data = DB::table('catalog')
@@ -79,7 +79,7 @@ class CatalogController extends Controller
                 ->when($request->has('mspn'), function ($query) use ($request) {
                     $query->where('mspn', $request->mspn);
                 })
-                ->select(array_diff($tableColumns,array_merge($excludeColumns, $additionalColumnsToExclude)))
+                ->select(array_diff($tableColumns, array_merge($excludeColumns, $additionalColumnsToExclude)))
                 ->get();
             return response()->json(['data' => $data]);
         }
@@ -96,26 +96,26 @@ class CatalogController extends Controller
 
 
         $bearerToken = request()->bearerToken();
-        
+
         $tokenId = (new Parser(new JoseEncoder()))->parse($bearerToken)->claims()
             ->all()['jti'];
         $client = Token::find($tokenId)->client;
         $excludeColumns = json_decode($client->catalog_column_settings);
         $additionalColumnsToExclude = ['updated_at', 'created_at'];
         $tableColumns = Schema::getColumnListing('catalog');
-      
+
 
         if ((!$request->has('section_width') && !$request->has('aspect_ratio') && !$request->has('rim_diameter')) && ($request->has('brand') || $request->has('mspn'))) {
             $data = DB::table('catalog')
-            ->where('category', 1)
-            ->when($request->has('brand'), function ($query) use ($request) {
-                $query->where('brand', $request->brand);
-            })
-            ->when($request->has('mspn'), function ($query) use ($request) {
-                $query->where('mspn', $request->mspn);
-            })
-            ->select(array_diff($tableColumns,array_merge($excludeColumns, $additionalColumnsToExclude)))
-            ->get();
+                ->where('category', 1)
+                ->when($request->has('brand'), function ($query) use ($request) {
+                    $query->where('brand', $request->brand);
+                })
+                ->when($request->has('mspn'), function ($query) use ($request) {
+                    $query->where('mspn', $request->mspn);
+                })
+                ->select(array_diff($tableColumns, array_merge($excludeColumns, $additionalColumnsToExclude)))
+                ->get();
 
             return response()->json(['data' => $data]);
         }
@@ -127,7 +127,7 @@ class CatalogController extends Controller
                 'aspect_ratio' => 'required|numeric',
                 'rim_diameter' => 'required|numeric',
             ];
-        
+
             $validatedData = $request->validate($rules);
 
             $data = DB::table('catalog')
@@ -142,7 +142,7 @@ class CatalogController extends Controller
                 ->when($request->has('mspn'), function ($query) use ($request) {
                     $query->where('mspn', $request->mspn);
                 })
-                ->select(array_diff($tableColumns,array_merge($excludeColumns, $additionalColumnsToExclude)))
+                ->select(array_diff($tableColumns, array_merge($excludeColumns, $additionalColumnsToExclude)))
                 ->get();
             return response()->json(['data' => $data]);
         }
@@ -154,57 +154,6 @@ class CatalogController extends Controller
         ], 400);
     }
 
-    //Get inventory price location
-    public function inventoryPrice(Request $request)
-    {
-        if ($request->has('brand') && $request->has('mspn')) {
-
-            $data = DB::table('inventory_feed AS i')
-                ->select(
-                    'i.brand',
-                    'i.part_number',
-                    'i.vendor_main_id',
-                    'i.store_location_id',
-                    'n.netnet',
-                    'i.qty',
-                )
-                ->join('netnet_price AS n', function ($join) {
-                    $join->on('n.brand', '=', 'i.brand')
-                        ->on('n.mspn', '=', 'i.part_number')
-                        ->on('n.vendor', '=', 'i.vendor_main_id');
-                })
-                ->join(DB::raw('(SELECT MIN(id) as min_id FROM netnet_price GROUP BY brand, mspn, vendor) AS sub'), function ($join) {
-                    $join->on('n.id', '=', 'sub.min_id');
-                })
-                ->where('i.part_number', $request->mspn)
-                ->where('i.brand', $request->brand)
-                ->get();
-        } else {
-            return response()->json([
-                'error' => 'Missing Parameter',
-                'message' => 'mspn is required.'
-            ], 400);
-        }
-
-
-        return  CatalogInventoryPriceResource::make($data);
-    }
-
-
-    public function getLocation(Request $request)
-    {
-        if ($request->has('location_id')) {
-            $data = DB::table('store_location')
-                ->where('id', $request->get('location_id'))
-                ->get();
-        } else {
-            $data = DB::table('store_location')
-                ->get();
-        }
-
-        return CatalogVendorLocationResource::collection($data);
-    }
-
 
     public function getVehicleYear()
     {
@@ -213,11 +162,11 @@ class CatalogController extends Controller
             ->post("https://api.ridestyler.net/Vehicle/GetYears?Token=" . $this->vehicleToken)
             ->json();
     }
- 
+
 
     public function getVehicleByMakes(Request $request)
     {
-        
+
         $request->validate([
             'year' => 'required',
             // 'make' => 'required',
@@ -243,7 +192,7 @@ class CatalogController extends Controller
             'year' => 'required|integer',
             'make' => 'required',
         ]);
-       
+
         $requestYear = [
             'Year' => $request->year,
             'MakeName' => $request->make
@@ -260,7 +209,12 @@ class CatalogController extends Controller
 
     public function getVehicleConfigurations(Request $request)
     {
-        
+        $request->validate([
+            'year' => 'required|integer',
+            'make' => 'required',
+            'model' => 'required',
+        ]);
+
         $requestOption = [
             'Year' => $request->year,
             'MakeName' => $request->make,
@@ -274,9 +228,15 @@ class CatalogController extends Controller
         return response()->json(['Options' => $options]);
     }
 
-    public function getVehicleSize(Request $request){
+    public function getVehicleSize(Request $request)
+    {
 
-      
+        $request->validate([
+            'year' => 'required|integer',
+            'make' => 'required',
+            'model' => 'required',
+            'option' => 'required',
+        ]);
 
         $exactMatch = $request->year . ' ' . $request->make . ' ' . $request->model . ' ' . $request->option;
         $requestOption = [
@@ -299,9 +259,9 @@ class CatalogController extends Controller
 
         //for get wheel size
         $wheelArr = [];
-        for($i = $getFitments['Fitments'][0]['VehicleFitmentWidthMin']; $i <= $getFitments['Fitments'][0]['VehicleFitmentWidthMax']; $i += 0.5 ){
+        for ($i = $getFitments['Fitments'][0]['VehicleFitmentWidthMin']; $i <= $getFitments['Fitments'][0]['VehicleFitmentWidthMax']; $i += 0.5) {
             $str = $getTireOptDetails['Details'][0]['Front']['InsideDiameter'] . 'x' . $i;
-            array_push($wheelArr , $str);
+            array_push($wheelArr, $str);
         }
 
         $response = [
@@ -309,25 +269,23 @@ class CatalogController extends Controller
                 'Tires' => collect($getTireOptDetails['Details'])->pluck('Front.Size'),
                 'Wheels' => $wheelArr,
             ]
-            
+
         ];
 
         return response()->json($response);
-
-
     }
 
 
     public function getTiresByVehicle(Request $request)
     {
-       $request->validate([
+        $request->validate([
             'year' => 'required|integer',
             'make' => 'required',
             'model' => 'required',
             'option' => 'required',
             'size' => 'required',
         ]);
-        
+
 
         $exactMatch = $request->year . ' ' . $request->make . ' ' . $request->model . ' ' . $request->option;
         $requestOption = [
@@ -336,7 +294,7 @@ class CatalogController extends Controller
 
         $response = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetTireOptionDetails?Token=" . $this->vehicleToken, $requestOption)->json();
-       
+
         $details = collect($response['Details'])->map(function ($detail) {
             return [
                 'full_size' => $detail['Front']['Size'],
@@ -345,7 +303,7 @@ class CatalogController extends Controller
         $filteredSize = $details->filter(function ($detail) use ($request) {
             return $detail['full_size'] === $request->size;
         })->values();
-   
+
 
 
         $bearerToken = request()->bearerToken();
@@ -355,7 +313,7 @@ class CatalogController extends Controller
         $excludeColumns = json_decode($client->catalog_column_settings);
         $additionalColumnsToExclude = ['updated_at', 'created_at'];
         $tableColumns = Schema::getColumnListing('catalog');
-      
+
 
         $data = DB::table('catalog')
             // ->whereIn('section_width', $details->pluck('Width'))
@@ -363,7 +321,7 @@ class CatalogController extends Controller
             // ->whereIn('rim_diameter', $details->pluck('InsideDiameter'))
             ->whereIn('full_size', $filteredSize->pluck('full_size'))
 
-            ->select(array_diff($tableColumns,array_merge($excludeColumns, $additionalColumnsToExclude)))
+            ->select(array_diff($tableColumns, array_merge($excludeColumns, $additionalColumnsToExclude)))
             ->get();
 
         return response()->json(['data' => $data]);
@@ -372,14 +330,14 @@ class CatalogController extends Controller
     public function getWheelsByVehicle(Request $request)
     {
 
-       $validator =  $request->validate([
+        $validator =  $request->validate([
             'year' => 'required|integer',
             'make' => 'required',
             'model' => 'required',
             'option' => 'required',
             'size' => 'required',
         ]);
-        
+
         //needed request
         $exactMatch = $request->year . ' ' . $request->make . ' ' . $request->model . ' ' . $request->option;
         $requestOption = [
@@ -392,28 +350,28 @@ class CatalogController extends Controller
         $configID = [
             'VehicleConfiguration' => collect($responseGetDesc['Descriptions'])->pluck('ConfigurationID')->implode(',')
         ];
-      
-        
+
+
         $getFitments = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetFitments?Token=" . $this->vehicleToken, $configID)->json();
-            // return $getFitments;
+        // return $getFitments;
 
         //getboltpatterns, fitments, tireoption using configID
         $getBoltPatterns = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Wheel/GetBoltPatterns?Token=" . $this->vehicleToken, $configID)->json();
 
-            // return $getBoltPatterns;
+        // return $getBoltPatterns;
 
         $getTireOptDetails = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetTireOptionDetails?Token=" . $this->vehicleToken, $configID)->json();
-        
+
         //get inside diameter from gettireoptiondetails
         $insideDiameter = $getTireOptDetails['Details'][0]['Front']['InsideDiameter'];
 
         // return $insideDiameter;
 
         $bearerToken = request()->bearerToken();
-        
+
         $tokenId = (new Parser(new JoseEncoder()))->parse($bearerToken)->claims()
             ->all()['jti'];
         $client = Token::find($tokenId)->client;
@@ -429,12 +387,64 @@ class CatalogController extends Controller
             ->where('bolt_pattern_1', '=', $getBoltPatterns['BoltPatterns'][1]['BoltPatternBoltCount'])
             ->where('wheel_diameter', '=', $insideDiameter)
             ->where('full_size', $request->size)
-            ->select(array_diff($tableColumns,array_merge($excludeColumns, $additionalColumnsToExclude)))
+            ->select(array_diff($tableColumns, array_merge($excludeColumns, $additionalColumnsToExclude)))
             ->get();
 
         return response()->json(['data' => $catalog]);
     }
 
+    //Get inventory price location
+    public function inventoryPrice(Request $request)
+    {
+        $request->validate([
+            'brand' => 'required',
+            'mspn' => 'required',
+        ]);
+
+
+        $data = DB::table('inventory_feed AS i')
+            ->select(
+                'i.brand',
+                'i.part_number',
+                'i.vendor_main_id',
+                'i.store_location_id',
+                'n.netnet',
+                'i.qty',
+            )
+            ->join('netnet_price AS n', function ($join) {
+                $join->on('n.brand', '=', 'i.brand')
+                    ->on('n.mspn', '=', 'i.part_number')
+                    ->on('n.vendor', '=', 'i.vendor_main_id');
+            })
+            ->join(DB::raw('(SELECT MIN(id) as min_id FROM netnet_price GROUP BY brand, mspn, vendor) AS sub'), function ($join) {
+                $join->on('n.id', '=', 'sub.min_id');
+            })
+            ->where('i.part_number', $request->mspn)
+            ->where('i.brand', $request->brand)
+            ->get();
+
+
+
+
+        return  CatalogInventoryPriceResource::make($data);
+
+
+    }
+
+
+    public function getLocation(Request $request)
+    {
+        if ($request->has('location_id')) {
+            $data = DB::table('store_location')
+                ->where('id', $request->get('location_id'))
+                ->get();
+        } else {
+            $data = DB::table('store_location')
+                ->get();
+        }
+
+        return CatalogVendorLocationResource::collection($data);
+    }
 
     public function getOrderStatus(Request $request)
     {
