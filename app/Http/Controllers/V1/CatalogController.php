@@ -416,30 +416,35 @@ class CatalogController extends Controller
             'mspn' => 'required',
         ]);
 
+        $bearerToken = request()->bearerToken();
 
+        $tokenId = (new Parser(new JoseEncoder()))->parse($bearerToken)->claims()
+            ->all()['jti'];
+        $client = Token::find($tokenId)->client;
+        // USE this variable when client column is created in oauth_clients table
+        $clientChannel = json_decode($client->channel);
+ 
         $data = DB::table('inventory_feed AS i')
             ->select(
                 'i.brand',
                 'i.part_number',
                 'i.vendor_main_id',
                 'i.store_location_id',
-                'n.netnet',
+                'n.selling_price',
                 'i.qty',
             )
-            ->join('netnet_price AS n', function ($join) {
+            ->join('inventory_channel_selling_price AS n', function ($join) {
                 $join->on('n.brand', '=', 'i.brand')
-                    ->on('n.mspn', '=', 'i.part_number')
-                    ->on('n.vendor', '=', 'i.vendor_main_id');
+                    ->on('n.part_number', '=', 'i.part_number');
             })
-            ->join(DB::raw('(SELECT MIN(id) as min_id FROM netnet_price GROUP BY brand, mspn, vendor) AS sub'), function ($join) {
+            ->join(DB::raw('(SELECT MIN(id) as min_id FROM inventory_channel_selling_price GROUP BY brand, part_number, channel) AS sub'), function ($join) {
                 $join->on('n.id', '=', 'sub.min_id');
             })
             ->where('i.part_number', $request->mspn)
             ->where('i.brand', $request->brand)
+            // Change the default 329 value by $clientChannel variable 
+            ->where('n.channel', 329)
             ->get();
-
-
-
 
         return  CatalogInventoryPriceResource::make($data);
 
