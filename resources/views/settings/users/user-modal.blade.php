@@ -1,17 +1,11 @@
-<div class="modal fade" id="myModal-{{ $user->id }}" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Edit User Access</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-
-            <div class="modal-body">
-                <form method="post" action="{{ route('update.user.catalog.column.settings', ['user_id' => $catalog['user_id']]) }}">
+@extends('layouts.mainlayout')
+@section('content')
+    <form method="post" action="{{ route('update.user.column.settings', ['id' => $id]) }}">
         @csrf
         <section class="intro d-flex align-items-center justify-content-center min-">
             <div class="container mb-5">
-                <h2 id="example" class="mt-2">User Catalog Access </h2>
+                <h2 id="example" class="mt-2">Hidden Catalog Column For User </h2>
+                {{-- <button class="btn btn-danger">Back</button> --}}
                 <div class="bd-example">
                     @if (session('error_message'))
                         <div class="alert alert-danger">
@@ -28,7 +22,7 @@
                             <div class="form-group">
                                 <div class="form-check form-switch">
                                     <input class="form-check-input" value="{{ $column }}" name="column[]"
-                                        {{ in_array($column, json_decode($catalog['catalog_column_settings'])) ? 'checked' : '' }}
+                                        {{ in_array($column, json_decode($client['catalog_column_settings'])) ? '' : 'checked' }}
                                         type="checkbox" role="switch">
                                     <label class="form-check-label">{{ $column }}</label>
                                 </div>
@@ -50,7 +44,7 @@
                                 <div class="form-group">
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" value="{{ $column }}" name="column[]"
-                                            {{ in_array($column, json_decode($catalog['catalog_column_settings'])) ? 'checked' : '' }}
+                                            {{ in_array($column, json_decode($client['catalog_column_settings'])) ? '' : 'checked' }}
                                             type="checkbox" role="switch">
                                         <label class="form-check-label">{{ $column }}</label>
                                     </div>
@@ -77,7 +71,7 @@
                             <div class="form-group">
                                 <div class="form-check form-switch">
                                     <input class="form-check-input" value="{{ $column }}" name="column[]"
-                                        {{ in_array($column, json_decode($catalog['catalog_column_settings'])) ? 'checked' : '' }}
+                                        {{ in_array($column, json_decode($client['catalog_column_settings'])) ? '' : 'checked' }}
                                         type="checkbox" role="switch">
                                     <label class="form-check-label">{{ $column }}</label>
                                 </div>
@@ -104,7 +98,7 @@
                         <div class="form-group">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" value="{{ $column }}" name="column[]"
-                                    {{ in_array($column, json_decode($catalog['catalog_column_settings'])) ? 'checked' : '' }}
+                                    {{ in_array($column, json_decode($client['catalog_column_settings'])) ? '' : 'checked' }}
                                     type="checkbox" role="switch">
                                 <label class="form-check-label">{{ $column }}</label>
                             </div>
@@ -129,12 +123,4 @@
 </div>
 </section>
 </form>
-            </div>
-
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Save changes</button>
-            </div>
-        </div>
-    </div>
-</div>
+@endsection
