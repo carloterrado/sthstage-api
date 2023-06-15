@@ -23,9 +23,17 @@ use Illuminate\Support\Facades\Route;
 
 
 
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [UserController::class, 'showLoginForm']);
+    Route::post('/login-submit', [UserController::class, 'login'])->name('login');
+});
 
-Route::get('/settings', [SettingsController::class, 'showSettings']);
-Route::get('/users', [UserController::class, 'getUsers'])->name('users');
-Route::get('/users-column-settings/{id}',[UserController::class, 'showUserCatalogSettings'])->name('user.column.settings');
-Route::post('update-user-column-settings/{id}', [UserController::class, 'updateUserColumnSettings'])->name('update.user.column.settings');
-Route::post('settings/catalog', [SettingsController::class, 'submitCatalog'])->name('submitCatalog');
+Route::middleware('auth')->group(function () {
+    Route::get('/settings', [SettingsController::class, 'showSettings']);
+    Route::get('/users', [UserController::class, 'getUsers'])->name('users');
+    Route::get('/users-column-settings/{id}',[UserController::class, 'showUserCatalogSettings'])->name('user.column.settings');
+    Route::post('update-user-column-settings/{id}', [UserController::class, 'updateUserColumnSettings'])->name('update.user.column.settings');
+    Route::post('settings/catalog', [SettingsController::class, 'submitCatalog'])->name('submitCatalog');
+    Route::post('/logout', [UserController::class, 'logout'])->name('logout');
+});
+
