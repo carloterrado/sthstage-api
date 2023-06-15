@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\DocumentationController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SthController;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\V1\UserController;
 use Illuminate\Support\Facades\Route;
+use League\CommonMark\Node\Block\Document;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,3 +31,6 @@ Route::get('/users', [UserController::class, 'getUsers'])->name('users');
 Route::get('/users-column-settings/{id}',[UserController::class, 'showUserCatalogSettings'])->name('user.column.settings');
 Route::post('update-user-column-settings/{id}', [UserController::class, 'updateUserColumnSettings'])->name('update.user.column.settings');
 Route::post('settings/catalog', [SettingsController::class, 'submitCatalog'])->name('submitCatalog');
+
+// Documentation
+Route::get('document', [DocumentationController::class, 'home']);
