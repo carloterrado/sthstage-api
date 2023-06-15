@@ -1,6 +1,13 @@
-@extends('layouts.mainlayout')
-@section('content')
-    <form method="post" action="{{ route('update.user.catalog.column.settings', ['user_id' => $catalog['user_id']]) }}">
+<div class="modal fade" id="myModal-{{ $user->id }}" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Edit User Access</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <form method="post" action="{{ route('update.user.catalog.column.settings', ['user_id' => $catalog['user_id']]) }}">
         @csrf
         <section class="intro d-flex align-items-center justify-content-center min-">
             <div class="container mb-5">
@@ -122,4 +129,12 @@
 </div>
 </section>
 </form>
-@endsection
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
