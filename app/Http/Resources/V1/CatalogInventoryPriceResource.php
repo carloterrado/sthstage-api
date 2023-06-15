@@ -12,27 +12,26 @@ class CatalogInventoryPriceResource extends JsonResource
      * @param  \Illuminate\Http\Request  $request
      * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
      */
+
     public function toArray($request)
     {
-
         $formattedData = [];
 
-
         foreach ($this->resource as $data) {
+            // Check if data with the same brand and mspn already exists
+            $existingDataKey = null;
+            foreach ($formattedData as $key => $existingData) {
+                if ($existingData['brand'] === $data->brand && $existingData['mspn'] === $data->part_number) {
+                    $existingDataKey = $key;
+                    break;
+                }
+            }
 
-            //pass sa $existingdata array kapag may duplicated vendor_main_id value
-            $existingData = array_filter($formattedData, function ($combinedData) use ($data) {
-                return $combinedData['vendor_main_id'] === $data->vendor_main_id;
-            });
-
-        
-            if (empty($existingData)) {
-
-                //add ganto pag walang laman si $existingdata
+            if ($existingDataKey === null) {
+                // If no existing data found, create a new entry
                 $formattedData[] = [
                     'brand' => $data->brand,
                     'mspn' => $data->part_number,
-                    'vendor_main_id' => $data->vendor_main_id,
                     'location' => [
                         [
                             'store_location_id' => $data->store_location_id,
@@ -41,29 +40,23 @@ class CatalogInventoryPriceResource extends JsonResource
                         ],
                     ],
                 ];
-
             } else {
-
-                //add ganto pag meron laman
-                $formattedData[array_key_first($existingData)]['location'][] = [
+                // If existing data found, append to the existing location array
+                $formattedData[$existingDataKey]['location'][] = [
                     'store_location_id' => $data->store_location_id,
                     'price' => $data->netnet,
                     'qty' => $data->qty,
                 ];
-
             }
-
         }
 
+        // Sort the "location" array in descending order based on "store_location_id"
+        foreach ($formattedData as &$data) {
+            usort($data['location'], function ($a, $b) {
+                return $a['store_location_id'] - $b['store_location_id'];
+            });
+        }
 
-        //remove vendor_main_id sa response
-        $responseData = array_map(function ($data) {
-            unset($data['vendor_main_id']);
-            return $data;
-        }, $formattedData);
-        
-        
-        return $responseData;
-
+        return $formattedData;
     }
 }
