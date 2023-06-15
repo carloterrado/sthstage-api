@@ -28,6 +28,10 @@
     }
   }
 
+  .side-bar{
+    height: 100vh;
+  }
+
   nav a{
     text-decoration: none;
     color: white;
