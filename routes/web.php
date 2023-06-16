@@ -56,6 +56,8 @@ Route::get('/users-column-settings/{id}',[UserController::class, 'showUserCatalo
 Route::post('update-user-column-settings/{id}', [UserController::class, 'updateUserColumnSettings'])->name('update.user.column.settings');
 Route::post('settings/catalog', [SettingsController::class, 'submitCatalog'])->name('submitCatalog');
 
+
+
 // Documentation
 Route::get('document-introduction', [DocumentationController::class, 'home'])->name('home');
 
