@@ -21,7 +21,7 @@
                 </ul>
             </div>
         </div>
-        <div>
+        <div> 
             <h6>
                 <a class="collapsed" data-bs-toggle="collapse" data-bs-target="#wheelCollapse" aria-expanded="false"
                     aria-controls="wheelCollapse">
