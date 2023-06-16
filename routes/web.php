@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::middleware('guest')->group(function () {
-    Route::get('/login', [UserController::class, 'showLoginForm']);
+    Route::get('/login', [UserController::class, 'showLoginForm'])->name('viewlogin');
     Route::post('/login-submit', [UserController::class, 'login'])->name('login');
 });
 
@@ -36,4 +36,3 @@ Route::middleware('auth')->group(function () {
     Route::post('settings/catalog', [SettingsController::class, 'submitCatalog'])->name('submitCatalog');
     Route::post('/logout', [UserController::class, 'logout'])->name('logout');
 });
-
