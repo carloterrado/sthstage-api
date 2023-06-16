@@ -3,26 +3,25 @@
 {{-- full_bolt_patterns, rim_diameter, simple_finish, max_rim_width_unit_id, season, bolt_circle_diameter_2 --}}
 
 @extends('layouts.mainlayout')
-@section('content')
-<div class="d-flex">
-    <div class="col-2 bg-dark text-light side-bar">
-        <!-- Sidebar content goes here -->
-        @include('settings.settings')
-    </div>
 
-    <div class="col-10">
-        <div class="center-form">
-            <form method="post" action="{{ route('update.user.column.settings', ['id' => $id]) }}">
-                @csrf
-                <section class="intro d-flex bg-white p-2 rounded-4">
-                    <div class="container-fluid">
-                        <h2 id="example" class="mt-2">Hidden Catalog Column For User </h2>
-                        <div class="mt-lg-5">
-                            <div class="row">
-                                {{-- column 1 --}}
-                                <div class="col-md-2">
-                                    @foreach ($columns as $column)
-                                        @if ($column === 'full_bolt_patterns')
+@section('content')
+    <div class="d-flex">
+        <div class="col-2 bg-dark text-light side-bar">
+            <!-- Sidebar content goes here -->
+            @include('settings.settings')
+        </div>
+
+        <div class="col-10">
+            <div class="center-form">
+                <form method="post" action="{{ route('update.user.column.settings', ['id' => $id]) }}">
+                    @csrf
+                    <div class="intro bg-white p-2 rounded-4">
+                        <h2 id="example" class="mt-2">Hidden Catalog Column For User</h2>
+                        <div class="row mt-lg-5">
+                            {{-- column 1 --}}
+                            <div class="col-md-2">
+                                @foreach ($columns as $column)
+                                    @if ($column === 'full_bolt_patterns')
                                         @break
                                     @endif
                                     <div class="form-group">
@@ -35,17 +34,13 @@
                                     </div>
                                 @endforeach
                             </div>
-    
+
                             {{-- column 2 --}}
                             <div class="col-md-2">
-                                @php
-                                    $secondColumn = false;
-                                @endphp
+                                @php $secondColumn = false; @endphp
                                 @foreach ($columns as $column)
                                     @if ($column === 'full_bolt_patterns')
-                                        @php
-                                            $secondColumn = true;
-                                        @endphp
+                                        @php $secondColumn = true; @endphp
                                     @endif
                                     @if ($secondColumn)
                                         <div class="form-group">
@@ -57,140 +52,117 @@
                                             </div>
                                         </div>
                                     @endif
-    
                                     @if ($column === 'rim_diameter')
-                                    @break
-                                @endif
-                            @endforeach
-                        </div>
-                        {{-- column 3 --}}
-                        <div class="col-md-2">
-                            @php
-                                $thirdColumn = false;
-                            @endphp
-                            @foreach ($columns as $column)
-                                @if ($column === 'rim_diameter_unit_id')
-                                    @php
-                                        $thirdColumn = true;
-                                    @endphp
-                                @endif
-                                @if ($thirdColumn)
-                                    <div class="form-group">
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" value="{{ $column }}" name="column[]"
-                                                {{ in_array($column, json_decode($client['catalog_column_settings'])) ? '' : 'checked' }}
-                                                type="checkbox" role="switch">
-                                            <label class="form-check-label">{{ $column }}</label>
+                                        @break
+                                    @endif
+                                @endforeach
+                            </div>
+
+                            {{-- column 3 --}}
+                            <div class="col-md-2">
+                                @php $thirdColumn = false; @endphp
+                                @foreach ($columns as $column)
+                                    @if ($column === 'rim_diameter_unit_id')
+                                        @php $thirdColumn = true; @endphp
+                                    @endif
+                                    @if ($thirdColumn)
+                                        <div class="form-group">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" value="{{ $column }}" name="column[]"
+                                                    {{ in_array($column, json_decode($client['catalog_column_settings'])) ? '' : 'checked' }}
+                                                    type="checkbox" role="switch">
+                                                <label class="form-check-label">{{ $column }}</label>
+                                            </div>
                                         </div>
-                                    </div>
-                                @endif
-    
-                                @if ($column === 'side_wall_style')
-                                @break
-                            @endif
-                        @endforeach
-                    </div>
-    
-                    {{-- column 4 --}}
-                    <div class="col-md-2">
-                        @php
-                            $fourthColumn = false;
-                        @endphp
-                        @foreach ($columns as $column)
-                            @if ($column === 'load_index_1')
-                                @php
-                                    $fourthColumn = true;
-                                @endphp
-                            @endif
-                            @if ($fourthColumn)
-                                <div class="form-group">
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" value="{{ $column }}" name="column[]"
-                                            {{ in_array($column, json_decode($client['catalog_column_settings'])) ? '' : 'checked' }}
-                                            type="checkbox" role="switch">
-                                        <label class="form-check-label">{{ $column }}</label>
-                                    </div>
-                                </div>
-                            @endif
-    
-                            @if ($column === 'min_rim_width')
-                            @break
-                        @endif
-                    @endforeach
-                </div>
-    
-                {{-- column 5 --}}
-                <div class="col-md-2">
-                    @php
-                        $fifthColumn = false;
-                    @endphp
-                    @foreach ($columns as $column)
-                        @if ($column === 'min_rim_width_unit_id')
-                            @php
-                                $fifthColumn = true;
-                            @endphp
-                        @endif
-                        @if ($fifthColumn)
-                            <div class="form-group">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" value="{{ $column }}" name="column[]"
-                                        {{ in_array($column, json_decode($client['catalog_column_settings'])) ? '' : 'checked' }}
-                                        type="checkbox" role="switch">
-                                    <label class="form-check-label">{{ $column }}</label>
-                                </div>
+                                    @endif
+                                    @if ($column === 'side_wall_style')
+                                        @break
+                                    @endif
+                                @endforeach
                             </div>
-                        @endif
-    
-                        @if ($column === 'season')
-                        @break
-                    @endif
-                @endforeach
-            </div>
-            {{-- column 6 --}}
-            <div class="col-md-2">
-                @php
-                    $sixthColumn = false;
-                @endphp
-                @foreach ($columns as $column)
-                    @if ($column === 'tire_type_performance')
-                        @php
-                            $sixthColumn = true;
-                        @endphp
-                    @endif
-                    @if ($sixthColumn)
-                        <div class="form-group">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" value="{{ $column }}" name="column[]"
-                                    {{ in_array($column, json_decode($client['catalog_column_settings'])) ? '' : 'checked' }}
-                                    type="checkbox" role="switch">
-                                <label class="form-check-label">{{ $column }}</label>
+
+                            {{-- column 4 --}}
+                            <div class="col-md-2">
+                                @php $fourthColumn = false; @endphp
+                                @foreach ($columns as $column)
+                                    @if ($column === 'load_index_1')
+                                        @php $fourthColumn = true; @endphp
+                                    @endif
+                                    @if ($fourthColumn)
+                                        <div class="form-group">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" value="{{ $column }}" name="column[]"
+                                                    {{ in_array($column, json_decode($client['catalog_column_settings'])) ? '' : 'checked' }}
+                                                    type="checkbox" role="switch">
+                                                <label class="form-check-label">{{ $column }}</label>
+                                            </div>
+                                        </div>
+                                    @endif
+                                    @if ($column === 'min_rim_width')
+                                        @break
+                                    @endif
+                                @endforeach
+                            </div>
+
+                            {{-- column 5 --}}
+                            <div class="col-md-2">
+                                @php $fifthColumn = false; @endphp
+                                @foreach ($columns as $column)
+                                    @if ($column === 'min_rim_width_unit_id')
+                                        @php $fifthColumn = true; @endphp
+                                    @endif
+                                    @if ($fifthColumn)
+                                        <div class="form-group">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" value="{{ $column }}" name="column[]"
+                                                    {{ in_array($column, json_decode($client['catalog_column_settings'])) ? '' : 'checked' }}
+                                                    type="checkbox" role="switch">
+                                                <label class="form-check-label">{{ $column }}</label>
+                                            </div>
+                                        </div>
+                                    @endif
+                                    @if ($column === 'season')
+                                        @break
+                                    @endif
+                                @endforeach
+                            </div>
+
+                            {{-- column 6 --}}
+                            <div class="col-md-2">
+                                @php $sixthColumn = false; @endphp
+                                @foreach ($columns as $column)
+                                    @if ($column === 'tire_type_performance')
+                                        @php $sixthColumn = true; @endphp
+                                    @endif
+                                    @if ($sixthColumn)
+                                        <div class="form-group">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" value="{{ $column }}" name="column[]"
+                                                    {{ in_array($column, json_decode($client['catalog_column_settings'])) ? '' : 'checked' }}
+                                                    type="checkbox" role="switch">
+                                                <label class="form-check-label">{{ $column }}</label>
+                                            </div>
+                                        </div>
+                                    @endif
+                                    @if ($column === 'bolt_circle_diameter_2')
+                                        @break
+                                    @endif
+                                @endforeach
                             </div>
                         </div>
-                    @endif
-    
-                    @if ($column === 'bolt_circle_diameter_2')
-                    @break
-                @endif
-            @endforeach
-        </div>
-    </div>
-    
-    <div class="row my-4">
-        <div class="col-md-12">
-            <div class="form-group d-flex justify-content-center">
-                <button class="btn btn-danger me-2">Back</button>
-                <input type="submit" class="btn btn-success " value="Submit">
+
+                        <div class="row my-4">
+                            <div class="col-md-12">
+                                <div class="form-group d-flex justify-content-end">
+                                    <button class="btn btn-danger me-2">Back</button>
+                                    <input type="submit" class="btn btn-success" value="Submit">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
-    
-    
-    </div>
-    </div>
-    </section>
-    </form>
-    </div>
-    </div>
-</div>
-   
 @endsection
+

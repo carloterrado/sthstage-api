@@ -5,8 +5,10 @@
         <div class="row">
             <!-- Sidebar -->
             <div class="col-2 bg-dark text-light side-bar">
-                <!-- Sidebar content goes here -->
-                @include('settings.settings')
+                <div class="position-fixed top-0 start-0 bg-dark text-light side-bar">
+                    <!-- Sidebar content goes here -->
+                    @include('settings.settings')
+                </div>
             </div>
 
             <!-- Main Content -->
