@@ -168,4 +168,26 @@ class UserController extends Controller
             return redirect()->back()->with('error_message', 'Failed to update catalog column access.')->withInput();
         }
     }
+
+
+    public function showLoginForm(){
+        return view('login.login');
+    }
+
+    public function login(Request $request){
+        
+
+        if (Auth::attempt($request->only('email', 'password'))) {
+            return redirect('/users');
+        }else{
+            return redirect('login');
+        }
+    }
+
+
+    public function logout(Request $request){
+        Auth::logout();
+
+        return redirect('/login');
+    }
 }

@@ -5,15 +5,17 @@
         <div class="row">
             <!-- Sidebar -->
             <div class="col-2 bg-dark text-light side-bar">
-                <!-- Sidebar content goes here -->
-                @include('settings.settings')
+                <div class="position-fixed top-0 start-0 bg-dark text-light side-bar">
+                    <!-- Sidebar content goes here -->
+                    @include('settings.settings')
+                </div>
             </div>
 
             <!-- Main Content -->
             <div class="col-10">
                 <div class="container">
                     <h3 class="mt-3">User Management</h3>
-                    <div class="row">
+                    <div class="row mb-5">
                         <div class="col-8">
                             <input type="text" class="form-control" placeholder="Search">
                         </div>
@@ -27,48 +29,19 @@
 
                     {{-- User List --}}
                     @foreach ($users as $user)
-                    <div class="row bg-white py-3 my-2 rounded-2 align-items-center">
+                    <div class="row bg-white p-3 my-2 rounded-2 align-items-center">
                         <div class="col">
                             {{ $user->name }}
                         </div>
-                        <div class="col text-center">
+                        <div class="col d-flex justify-content-end">
                             <a href="{{ route('user.column.settings', ['id' => $user->id]) }}"><button type="button"
-                                    class="btn btn-primary">Edit Access</button></a>
+                                    class="btn btn-secondary">Edit Access</button></a>
                         </div>
                     </div>
                     @endforeach
-        
                 </div>
             </div>
         </div>
     </div>
 @endsection
 
-{{-- @section('content')
-    <div class="container ">
-        <div class="intro d-flex align-items-center justify-content-center">
-            <table class="table table-borderless">
-                @if (session('success_message'))
-                    <div class="alert alert-success">
-                        {{ session('success_message') }}
-                    </div>
-                @endif
-                <thead>
-                    <tr>
-                        <th scope="col">Name</th>
-                        <th scope="col">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($users as $user)
-                        <tr>
-                            <td>{{ $user->name }}</td>
-                            <td><a href="{{ route('user.column.settings', ['id' => $user->id]) }}"><button type="button"
-                                        class="btn btn-primary">Edit Access</button></a></td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    </div>
-@endsection --}}

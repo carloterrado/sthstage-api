@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DocumentationController;
+use App\Http\Controllers\ExcelChecker\ExcelImporterController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SthController;
 use App\Http\Controllers\TestController;
@@ -24,6 +25,29 @@ use League\CommonMark\Node\Block\Document;
 
 
 
+
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [UserController::class, 'showLoginForm'])->name('viewlogin');
+    Route::post('/login-submit', [UserController::class, 'login'])->name('login');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/settings', [SettingsController::class, 'showSettings']);
+    Route::get('/users', [UserController::class, 'getUsers'])->name('users');
+    Route::get('/users-column-settings/{id}',[UserController::class, 'showUserCatalogSettings'])->name('user.column.settings');
+    Route::post('update-user-column-settings/{id}', [UserController::class, 'updateUserColumnSettings'])->name('update.user.column.settings');
+    Route::post('settings/catalog', [SettingsController::class, 'submitCatalog'])->name('submitCatalog');
+    Route::post('/logout', [UserController::class, 'logout'])->name('logout');
+
+    //View Catalog
+    Route::get('/catalog', [ExcelImporterController::class, 'index'])->name('catalog');
+    Route::post('/import', [ExcelImporterController::class, 'import'])->name('import');
+});
+// Route::get('/settings', [SettingsController::class, 'showSettings']);
+// Route::get('/users', [UserController::class, 'getUsers'])->name('users');
+// Route::get('/users-column-settings/{id}',[UserController::class, 'showUserCatalogSettings'])->name('user.column.settings');
+// Route::post('update-user-column-settings/{id}', [UserController::class, 'updateUserColumnSettings'])->name('update.user.column.settings');
+// Route::post('settings/catalog', [SettingsController::class, 'submitCatalog'])->name('submitCatalog');
 
 
 Route::get('/settings', [SettingsController::class, 'showSettings']);
