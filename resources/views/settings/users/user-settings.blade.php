@@ -12,10 +12,10 @@
         </div>
 
         <div class="col-10">
-            <div class="center-form">
+            <div class="center-form p-4">
                 <form method="post" action="{{ route('update.user.column.settings', ['id' => $id]) }}">
                     @csrf
-                    <div class="intro bg-white p-2 rounded-4">
+                    <div class="intro p-2 rounded-4">
                         <h2 id="example" class="mt-2">Hidden Catalog Column For User</h2>
                         <div class="row mt-lg-5">
                             {{-- column 1 --}}
