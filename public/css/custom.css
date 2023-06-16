@@ -1,9 +1,8 @@
-:root{
-  --color1: rgb(1,4,9);
-  --color2: rgb(22,27,34);
-  --color3: rgb(13,17,23);
+:root {
+    --color1: rgb(1, 4, 9);
+    --color2: rgb(22, 27, 34);
+    --color3: rgb(13, 17, 23);
 }
-
 
 .form-group {
     margin-bottom: 1rem !important;
@@ -49,8 +48,8 @@ nav a:hover {
 }
 
 .center-form {
-    margin-left: 3vw;
-    margin-right: 3vw;
+    margin-left: 2vw;
+    margin-right: 2vw;
     margin-top: 3vh;
     margin-bottom: 3vh;
 }
