@@ -175,10 +175,7 @@ class UserController extends Controller
     }
 
     public function login(Request $request){
-
-        // if (!Auth::check()) {
-        //     return redirect()->back();
-        // }
+        
 
         if (Auth::attempt($request->only('email', 'password'))) {
             return redirect('/users');
