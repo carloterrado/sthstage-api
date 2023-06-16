@@ -21,7 +21,7 @@ class CatalogInventoryPriceResource extends JsonResource
             // Check if data with the same brand and mspn already exists
             $existingDataKey = null;
             foreach ($formattedData as $key => $existingData) {
-                if ($existingData['brand'] === $data->brand && $existingData['mspn'] === $data->part_number) {
+                if ($existingData['brand'] === $data->brand && $existingData['part_number'] === $data->part_number) {
                     $existingDataKey = $key;
                     break;
                 }
@@ -31,11 +31,11 @@ class CatalogInventoryPriceResource extends JsonResource
                 // If no existing data found, create a new entry
                 $formattedData[] = [
                     'brand' => $data->brand,
-                    'mspn' => $data->part_number,
+                    'part_number' => $data->part_number,
                     'location' => [
                         [
                             'store_location_id' => $data->store_location_id,
-                            'price' => $data->netnet,
+                            'price' => $data->selling_price,
                             'qty' => $data->qty,
                         ],
                     ],
@@ -44,7 +44,7 @@ class CatalogInventoryPriceResource extends JsonResource
                 // If existing data found, append to the existing location array
                 $formattedData[$existingDataKey]['location'][] = [
                     'store_location_id' => $data->store_location_id,
-                    'price' => $data->netnet,
+                    'price' => $data->selling_price,
                     'qty' => $data->qty,
                 ];
             }
