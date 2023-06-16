@@ -1,9 +1,8 @@
-:root{
-  --color1: rgb(1,4,9);
-  --color2: rgb(22,27,34);
-  --color3: rgb(13,17,23);
+:root {
+    --color1: rgb(1, 4, 9);
+    --color2: rgb(22, 27, 34);
+    --color3: rgb(13, 17, 23);
 }
-
 
 .form-group {
     margin-bottom: 1rem !important;
