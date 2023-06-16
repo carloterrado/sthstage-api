@@ -13,7 +13,7 @@ class ExcelImporterController extends Controller
 {
     public function index(Request $request)
     {
-        $rows = Catalog::paginate(10);
+        $rows = DB::table('catalog')->limit(10)->paginate(10);
         // dd($rows);
         if (empty($rows)) {
             return view('view',  ['empty' => 'The Database is empty.']);
