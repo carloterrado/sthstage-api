@@ -57,6 +57,7 @@ Route::post('update-user-column-settings/{id}', [UserController::class, 'updateU
 Route::post('settings/catalog', [SettingsController::class, 'submitCatalog'])->name('submitCatalog');
 
 // Documentation
+
 Route::get('document-introduction', [DocumentationController::class, 'home'])->name('home');
 
 // Vehicle API
