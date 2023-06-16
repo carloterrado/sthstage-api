@@ -1,11 +1,13 @@
 <?php
 
+use App\Http\Controllers\DocumentationController;
 use App\Http\Controllers\ExcelChecker\ExcelImporterController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SthController;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\V1\UserController;
 use Illuminate\Support\Facades\Route;
+use League\CommonMark\Node\Block\Document;
 
 /*
 |--------------------------------------------------------------------------
@@ -48,3 +50,34 @@ Route::middleware('auth')->group(function () {
 // Route::post('settings/catalog', [SettingsController::class, 'submitCatalog'])->name('submitCatalog');
 
 
+Route::get('/settings', [SettingsController::class, 'showSettings']);
+Route::get('/users', [UserController::class, 'getUsers'])->name('users');
+Route::get('/users-column-settings/{id}',[UserController::class, 'showUserCatalogSettings'])->name('user.column.settings');
+Route::post('update-user-column-settings/{id}', [UserController::class, 'updateUserColumnSettings'])->name('update.user.column.settings');
+Route::post('settings/catalog', [SettingsController::class, 'submitCatalog'])->name('submitCatalog');
+
+// Documentation
+Route::get('document-introduction', [DocumentationController::class, 'home'])->name('home');
+
+// Vehicle API
+Route::get('vehicle-getyears', [DocumentationController::class, 'getyears'])->name('getyears');
+Route::get('vehicle-getmakes', [DocumentationController::class, 'getmakes'])->name('getmakes');
+Route::get('vehicle-getmodels', [DocumentationController::class, 'getmodels'])->name('getmodels');
+Route::get('vehicle-getoptions', [DocumentationController::class, 'getoptions'])->name('getoptions');
+Route::get('vehicle-getsize', [DocumentationController::class, 'getsize'])->name('getsize');
+
+ // Wheel API
+Route::get('wheel-getbrand', [DocumentationController::class, 'wheelgetbrand'])->name('wheelgetbrand');
+Route::get('wheel-getmspn', [DocumentationController::class, 'wheelgetmspn'])->name('wheelgetmspn');
+Route::get('wheel-getsize', [DocumentationController::class, 'wheelgetsize'])->name('wheelgetsize');
+Route::get('wheels-by-vehicle', [DocumentationController::class, 'getwheelsbyvehicle'])->name('getwheelsbyvehicle');
+
+// Tire API
+Route::get('tire-getbrand', [DocumentationController::class, 'tiregetbrand'])->name('tiregetbrand');
+Route::get('tire-getmspn', [DocumentationController::class, 'tiregetmspn'])->name('tiregetmspn');
+Route::get('tire-getsize', [DocumentationController::class, 'tiregetsize'])->name('tiregetsize');
+Route::get('tires-by-vehicle', [DocumentationController::class, 'gettiresbyvehicle'])->name('gettiresbyvehicle');
+
+// Inventory API
+Route::get('inventory-getlocation', [DocumentationController::class, 'getlocation'])->name('getlocation');
+Route::get('inventory-price-by-location', [DocumentationController::class, 'getinventorybylocation'])->name('getinventorybylocation');

@@ -1,8 +1,13 @@
+<<<<<<< HEAD
+/* Import the VS Code-like theme for Prism.js */
+@import url('https://cdn.jsdelivr.net/npm/prism-themes/themes/prism-vsc-dark-plus.css');
+=======
 :root {
     --color1: rgb(1, 4, 9);
     --color2: rgb(22, 27, 34);
     --color3: rgb(13, 17, 23);
 }
+>>>>>>> 2d8363bd14834b47ed6fbc3a60c55f8d25d3266f
 
 .form-group {
     margin-bottom: 1rem !important;
@@ -45,11 +50,21 @@ nav a:hover {
     padding: 8px;
     color: black; */
     text-decoration: underline;
+  }
+ 
+  .divider {
+    border-bottom: 1px solid #dee2e6;
+    margin-bottom: 1rem;
 }
 
-.center-form {
-    margin-left: 2vw;
-    margin-right: 2vw;
-    margin-top: 3vh;
-    margin-bottom: 3vh;
+/* Adjust the background color and other styles for the code block */
+pre {
+    background-color: #1e1e1e;
+    padding: 1rem;
+    border-radius: 5px;
+}
+
+.image{
+  width: 12vw;
+  height: 12vh;
 }
