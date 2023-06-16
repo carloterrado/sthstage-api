@@ -41,10 +41,3 @@ Route::middleware('auth')->group(function () {
     Route::get('/catalog', [ExcelImporterController::class, 'index'])->name('catalog');
     Route::post('/import', [ExcelImporterController::class, 'import'])->name('import');
 });
-// Route::get('/settings', [SettingsController::class, 'showSettings']);
-// Route::get('/users', [UserController::class, 'getUsers'])->name('users');
-// Route::get('/users-column-settings/{id}',[UserController::class, 'showUserCatalogSettings'])->name('user.column.settings');
-// Route::post('update-user-column-settings/{id}', [UserController::class, 'updateUserColumnSettings'])->name('update.user.column.settings');
-// Route::post('settings/catalog', [SettingsController::class, 'submitCatalog'])->name('submitCatalog');
-
-
