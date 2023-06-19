@@ -1,13 +1,5 @@
-<<<<<<< HEAD
 /* Import the VS Code-like theme for Prism.js */
 @import url('https://cdn.jsdelivr.net/npm/prism-themes/themes/prism-vsc-dark-plus.css');
-=======
-:root {
-    --color1: rgb(1, 4, 9);
-    --color2: rgb(22, 27, 34);
-    --color3: rgb(13, 17, 23);
-}
->>>>>>> 2d8363bd14834b47ed6fbc3a60c55f8d25d3266f
 
 .form-group {
     margin-bottom: 1rem !important;
@@ -67,4 +59,11 @@ pre {
 .image{
   width: 12vw;
   height: 12vh;
+}
+
+.center-form{
+    margin-left: 4vw;
+    margin-right: 4vw;
+    margin-top: 4vh;
+    margin-bottom: 4vh; 
 }
