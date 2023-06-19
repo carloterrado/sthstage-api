@@ -19,7 +19,7 @@
                         <div class="col-8">
                             <input type="text" class="form-control" placeholder="Search">
                         </div>
-                        <div class="col-6">
+                        <div class="col-4">
                             <div class="d-flex justify-content-end">
                                 <a href="" class="btn btn-dark me-3 d-flex align-items-center"><span class="material-symbols-outlined">
                                     filter_alt
@@ -38,19 +38,10 @@
                             {{ $user->name }}
                         </div>
                         <div class="col-2 d-flex justify-content-end">
-                            <h5>Action</h5>
+                        <a href="{{ route('user.column.settings', ['id' => $user->id]) }}"><button type="button"
+                            class="btn btn-secondary">Edit Access</button></a>
                         </div>
                     </div>
-                    @foreach ($users as $user)
-                        <div class="row bg-white p-3 my-2 rounded-2 align-items-center">
-                            <div class="col">
-                                {{ $user->name }}
-                            </div>
-                            <div class="col d-flex justify-content-end">
-                                <a href="{{ route('user.column.settings', ['id' => $user->id]) }}"><button type="button"
-                                        class="btn btn-secondary">Edit Access</button></a>
-                            </div>
-                        </div>
                     @endforeach
                 </div>
             </div>
