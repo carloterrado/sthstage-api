@@ -14,8 +14,8 @@
             <!-- Main Content -->
             <div class="col-10">
                 <div class="container">
-                    <h3 class="mt-3">User Management</h3>
-                    <div class="row mb-5">
+                    <h3 class="my-5">User Management</h3>
+                    <div class="row my-5">
                         <div class="col-8">
                             <input type="text" class="form-control" placeholder="Search">
                         </div>
@@ -29,7 +29,7 @@
 
                     {{-- User List --}}
                     @foreach ($users as $user)
-                    <div class="row bg-white p-3 my-2 rounded-2 align-items-center">
+                    <div class="bg-white p-4 my-3 rounded-2 align-items-center d-flex justify-content-end">
                         <div class="col">
                             {{ $user->name }}
                         </div>

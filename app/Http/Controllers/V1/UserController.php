@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -169,6 +170,31 @@ class UserController extends Controller
         }
     }
 
+    public function userManagementPage(){
+        $users = DB::table('users')->get();
+        // dd($users);
+        return view('settings.userManagement.userManagement')->with(compact('users'));
+    }
+
+    public function addUser(Request $request){
+        // dd($request->all());
+        $userData = DB::table('users')
+            ->insert([
+                'firstname' => $request->firstname,
+                'lastname' => $request->lastname,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'api_token' => NULL,
+                'role' => $request->role,
+                'status' => $request->status,
+                'seenlog' => $request->seenlog,
+                'display_user' => $request->display_user,
+                'remember_token' => NULL,
+                'session_id' => ''
+            ]);
+
+        return redirect()->back();
+    }
 
     public function showLoginForm(){
         return view('login.login');
