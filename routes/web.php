@@ -60,6 +60,9 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/settings', [SettingsController::class, 'showSettings']);
     Route::get('/users', [UserController::class, 'getUsers'])->name('users');
+
+    Route::get('/user-management', [UserController::class, 'userManagementPage'])->name('userManagementPage');
+    Route::post('/add-user', [UserController::class, 'addUser'])->name('addUser');
     Route::get('/users-column-settings/{id}', [UserController::class, 'showUserCatalogSettings'])->name('user.column.settings');
     Route::post('update-user-column-settings/{id}', [UserController::class, 'updateUserColumnSettings'])->name('update.user.column.settings');
     Route::post('settings/catalog', [SettingsController::class, 'submitCatalog'])->name('submitCatalog');
