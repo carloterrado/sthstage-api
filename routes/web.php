@@ -25,7 +25,6 @@ use League\CommonMark\Node\Block\Document;
 
 
 
-
 Route::middleware('guest')->group(function () {
     Route::get('/login', [UserController::class, 'showLoginForm'])->name('viewlogin');
     Route::post('/login-submit', [UserController::class, 'login'])->name('login');
@@ -70,4 +69,3 @@ Route::middleware('auth')->group(function () {
     Route::get('/catalog', [ExcelImporterController::class, 'index'])->name('catalog');
     Route::post('/import', [ExcelImporterController::class, 'import'])->name('import');
 });
-
