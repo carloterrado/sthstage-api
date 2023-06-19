@@ -1,13 +1,22 @@
 /* Import the VS Code-like theme for Prism.js */
 @import url('https://cdn.jsdelivr.net/npm/prism-themes/themes/prism-vsc-dark-plus.css');
+=======
+:root {
+    --color1: rgb(1, 4, 9);
+    --color2: rgb(22, 27, 34);
+    --color3: rgb(13, 17, 23);
+}
+>>>>>>> 2d8363bd14834b47ed6fbc3a60c55f8d25d3266f
 
 .form-group {
     margin-bottom: 1rem !important;
 }
+
 .control-label {
     margin-bottom: 0.5rem;
     font-weight: 600;
 }
+
 .bd-example {
     position: relative;
     padding: 1rem;
@@ -15,6 +24,7 @@
     border: solid #dee2e6;
     border-width: 1px 0 0;
 }
+
 .intro {
     /* height: 100%;
     min-height: 100vh; */
@@ -42,9 +52,17 @@ nav a:hover {
     padding: 8px;
     color: black; */
     text-decoration: underline;
-  }
- 
-  .divider {
+}
+
+nav a {
+
+    text-decoration: none;
+
+    color: white;
+
+}
+
+.divider {
     border-bottom: 1px solid #dee2e6;
     margin-bottom: 1rem;
 }
@@ -56,9 +74,9 @@ pre {
     border-radius: 5px;
 }
 
-.image{
-  width: 12vw;
-  height: 12vh;
+.image {
+    width: 12vw;
+    height: 12vh;
 }
 
 .center-form{
