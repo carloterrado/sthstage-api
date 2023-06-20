@@ -5,7 +5,13 @@
 
 <div class="container-fluid">
     <div class="row">
-        <div class="col-12">
+        <div class="col-2 bg-dark text-light side-bar">
+            <div class="position-absolute top-0 start-0 bg-dark text-light side-bar">
+                <!-- Sidebar content goes here -->
+                @include('settings.settings')
+            </div>
+        </div>
+        <div class="col-10">
             <div class="container mt-4">
                 <div class="row justify-content-center">
                     <div class="col-md-12">
@@ -20,12 +26,6 @@
                         </div>
                         @endif
                         <div class="card">
-                            <!-- <div class="container mt-4">
-                                <div class="input-group">
-                                    <label class="input-group-text bg-white" for="search"><i class="fa fa-search"></i></label>
-                                    <input type="text" class="form-control rounded-right" id="search" placeholder="Search">
-                                </div>
-                            </div> -->
                             <div class="card-body">
                                 <div class="container mt-2">
                                     <form action="{{ route('import') }}" method="POST" enctype="multipart/form-data">
