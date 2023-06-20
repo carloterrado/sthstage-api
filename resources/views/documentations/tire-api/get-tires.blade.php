@@ -14,7 +14,7 @@
             <h3>HTTP Request</h3>
             <p><code>{{ url('/api/v1/catalog/tires') }}</code></p>
             <h3>Parameters</h3>
-            <p>brand</p>
+            <p>brand</p> 
             <p>mspn</p>
             <p>section_width</p>
             <p>aspect_ratio</p>
