@@ -12,7 +12,7 @@
             <h3>Wheel Get by size</h3>
             <p>Get a list of wheels by size for the specified parameters.</p>
             <h3>HTTP Request</h3>
-            <p><code>https://api/v1/catalog/wheels</code></p>
+            <p><code>{{ url('/api/v1/catalog/wheels') }}</code></p>
             <h3>Parameters</h3>
             <p>wheel_diameter</p>
             <p>wheel_width</p>
@@ -26,7 +26,7 @@
             <div class="divider"></div>
             <pre>
     <code class="language-json" style=" color:aqua ">
-<p>GET https://api/v1/catalog/wheels</p>
+<p>GET {{ url('/api/v1/catalog/wheels') }}</p>
 {
 "wheel_diameter": 15,
 "wheel_width": 10

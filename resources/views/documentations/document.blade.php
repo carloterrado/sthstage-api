@@ -15,7 +15,8 @@
             <h3>AUTHENTICATION</h3>
             <p>Tokens are generated on each user authentication. To authenticate with API for STH, you need to call the login endpoint and put the required parameters:</p>
             <h3>HTTP Request</h3>
-            <p><code>https://api/v1/login</code></p>
+            <p><code> {{ url('/api/v1/login') }}</code></p>
+           
             <h3>Parameters</h3>
             <p>email</p>
             <p>password</p>
@@ -26,7 +27,7 @@
             <div class="divider"></div>
             <pre>
             <code class="language-json" style=" color:aqua ">
-<p>GET https://api/v1/login</p>
+<p>GET {{ url('/api/v1/login') }}</p>
 {
 "email": user@example.com, 
 "password": password

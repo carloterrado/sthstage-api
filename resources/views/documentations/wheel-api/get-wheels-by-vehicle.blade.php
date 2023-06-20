@@ -12,7 +12,7 @@
             <h3>Get Wheels by vehicle</h3>
             <p>Get a list of wheels by vehicle for the specified parameters.</p>
             <h3>HTTP Request</h3>
-            <p><code>https://api/v1/catalog/vehicle/wheels</code></p>
+            <p><code> {{ url('/api/v1/catalog/vehicle/wheels') }}</code></p>
             <h3>Parameters</h3>
             <p>year</p>
             <p>make</p>
@@ -26,7 +26,7 @@
             <div class="divider"></div>
             <pre>
 <code class="language-json" style=" color:aqua ">
-<p>GET https://api/v1/catalog/vehicle/wheels</p>
+<p>GET {{ url('/api/v1/catalog/vehicle/wheels') }}</p>
 {
 "year": 2024,
 "make": Acura,

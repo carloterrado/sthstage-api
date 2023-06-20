@@ -9,27 +9,30 @@
         <div class="col-10">
             <h1>Tire API</h1>
             <div class="divider"></div>
-            <h3>Tire Get by mspn</h3>
-            <p>Get a list of tires by mspn for the specified parameters.</p>
+            <h3>Get Tires</h3>
+            <p>Get a list of tires by brand, mspn, and size for the specified parameters.</p>
             <h3>HTTP Request</h3>
             <p><code>{{ url('/api/v1/catalog/tires') }}</code></p>
-
             <h3>Parameters</h3>
-            <p>mspn</p>
-            <h3>Optional Parameters</h3>
             <p>brand</p>
+            <p>mspn</p>
             <p>section_width</p>
             <p>aspect_ratio</p>
             <p>rim_diameter</p>
             <h3>JSON</h3>
-            <p>To get a list of tires that are available in the MSPN 805850:</p>
+            <p>To get a list of tires by brand, mspn, section_width, aspect_ratio and rim_diameter available in DELINTE, 805850, 275, 25 and 24: </p>
 
             <div class="divider"></div>
             <pre>
         <code class="language-json" style=" color:aqua ">
 <p>GET {{ url('/api/v1/catalog/tires') }}</p>
 {
-"mspn": 805850
+"brand": DELINTE,
+"mspn": 805850,
+"section_width": 275,
+"aspect_ratio": 25,
+"rim_diameter": 24
+
 }
         </code>
     </pre>
@@ -40,16 +43,16 @@
 {
     "data": [
         {
-            "id": 394752,
-            "unq_id": "DELINTE805850",
-            "category": 1,
-            "brand": "DELINTE",
-            "mspn": "805850",
-            "size_dimensions": "",
-            "full_size": "275/25R24",
-            "section_width": "275",
             "aspect_ratio": "25",
+            "brand": "DELINTE",
+            "category": 1,
+            "full_size": "275/25R24",
+            "id": 394752,
+            "mspn": "805850",
             "rim_diameter": "24",
+            "section_width": "275",
+            "size_dimensions": "",
+            "unq_id": "DELINTE805850",
             "wheel_diameter": "",
             "wheel_width": ""
         }

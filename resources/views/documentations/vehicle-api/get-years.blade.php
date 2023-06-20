@@ -12,7 +12,7 @@
             <h3>Get by years</h3>
             <p>Get a list of vehicles by years for the specified parameters.</p>
             <h3>HTTP Request</h3>
-            <p><code>https://api/v1/catalog/vehicle/years</code></p>
+            <p><code>{{ url('/api/v1/catalog/vehicle/years') }}</code></p>
             <h3>Parameters</h3>
             <p></p>
 
@@ -22,7 +22,7 @@
             <div class="divider"></div>
             <pre>
                 <code class="language-json" style=" color:aqua ">
-<p>GET https://api/v1/catalog/vehicle/years</p>
+<p>GET {{ url('/api/v1/catalog/vehicle/years') }}</p>
 {
     
 }

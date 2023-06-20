@@ -9,26 +9,30 @@
         <div class="col-10">
             <h1>Wheel API</h1>
             <div class="divider"></div>
-            <h3>Wheel Get by mspn</h3>
-            <p>Get a list of wheels by mspn for the specified parameters.</p>
+            <h3>Get Wheels</h3>
+            <p>Get a list of tires by brand, mspn, and size for the specified parameters.</p>
             <h3>HTTP Request</h3>
             <p><code>{{ url('/api/v1/catalog/wheels') }}</code></p>
             <h3>Parameters</h3>
+            <p>brand</p>
             <p>mspn</p>
-            <h3>Optional Parameters</h3>
             <p>wheel_diameter</p>
             <p>wheel_width</p>
-            <p>brand</p>
 
             <h3>JSON</h3>
-            <p>To get a list of wheels that are available in the MSPN 521-5165P-25:</p>
+            <p>To get a list of tires by brand, mspn, wheel_diameter, and wheel_width available in VISION, 521-5165P-25, 15,
+                and 10: </p>
 
             <div class="divider"></div>
             <pre>
         <code class="language-json" style=" color:aqua ">
 <p>GET {{ url('/api/v1/catalog/wheels') }}</p>
 {
-"mspn": 521-5165P-25
+"brand": VISION,
+"mspn": 521-5165P-25,
+"section_width": 15,
+"aspect_ratio": 10
+
 }
         </code>
     </pre>
@@ -39,16 +43,16 @@
 {
     "data": [
         {
-            "id": 109584,
-            "unq_id": "7-521-5165P-25",
-            "category": 2,
-            "brand": "VISION",
-            "mspn": "521-5165P-25",
-            "size_dimensions": "15x10",
-            "full_size": "15x10",
-            "section_width": "",
             "aspect_ratio": "",
+            "brand": "VISION",
+            "category": 2,
+            "full_size": "15x10",
+            "id": 109584,
+            "mspn": "521-5165P-25",
             "rim_diameter": "",
+            "section_width": "",
+            "size_dimensions": "15x10",
+            "unq_id": "7-521-5165P-25",
             "wheel_diameter": "15",
             "wheel_width": "10"
         }

@@ -12,7 +12,7 @@
             <h3>Get locatin details</h3>
             <p>Get a list of location details for the specified parameters.</p>
             <h3>HTTP Request</h3>
-            <p><code>https://api/v1/catalog/locations</code></p>
+            <p><code>{{ url('/api/v1/catalog/locations') }}</code></p>
             <h3>Parameters</h3>
             <p>location_id</p>
 
@@ -22,7 +22,8 @@
             <div class="divider"></div>
             <pre>
     <code class="language-json" style=" color:aqua ">
-<p>GET https://api/v1/catalog/locations</p>
+<p>GET {{ url('/api/v1/catalog/locations') }}</p>
+
 {
 "location_id": 3
 }
