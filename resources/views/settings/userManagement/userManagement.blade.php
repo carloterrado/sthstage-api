@@ -49,7 +49,6 @@
                                 <td class="text-center">{{ $user->email }}</td>
                                 <td class="text-center">{{ $user->role }}</td>
                                 <td class="text-center">
-                                    <button class="btn"><i class="fas fa-eye"></i></button>
                                     <button class="btn"><i class="fas fa-pencil-alt"></i></button>
                                     <button class="btn"><i class="fas fa-trash"></i></button>
                                 </t class="text-center"d>
