@@ -170,7 +170,7 @@ class UserController extends Controller
     }
 
     public function userManagementPage(){
-        $users = DB::table('users')->paginate(10);
+        $users = DB::table('users')->orderBy('created_at', 'desc')->paginate(10);
         // dd($users);
         return view('settings.userManagement.userManagement')->with(compact('users'));
     }
