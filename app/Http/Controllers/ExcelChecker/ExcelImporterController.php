@@ -13,7 +13,7 @@ class ExcelImporterController extends Controller
 {
     public function index(Request $request)
     {
-        $rows = Catalog::paginate(10);
+        $rows = DB::table('catalog')->limit(10)->paginate(10);
         // dd($rows);
         if (empty($rows)) {
             return view('view',  ['empty' => 'The Database is empty.']);
@@ -63,7 +63,7 @@ class ExcelImporterController extends Controller
                     return array_combine($dataIndexNames, $row);
                 })->each(function ($row) {
                     $primaryKey = ['brand' => $row['brand'], 'mspn' => $row['mspn']];
-                    Catalog::updateOrCreate($primaryKey, $row);
+                    DB::table('catalog')::updateOrCreate($primaryKey, $row);
                 });
             }
             return redirect()->back()->with(['match' => 'Excel imported successfully', 'rows' => $rows]);
