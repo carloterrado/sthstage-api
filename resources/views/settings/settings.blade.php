@@ -6,6 +6,7 @@
             <a href="{{ route('users') }}" class="nav-link mb-3 text-light">Edit API User Access</a>
             <a href="{{ route('userManagementPage') }}" class="nav-link mb-3 text-light">Add User</a>
             <a href="#" class="nav-link mb-3 text-light">Update Vendor</a>
+            <a href="{{ route('home') }}" class="nav-link mb-3 text-light">Documentation</a>
         </div>
         <div class="mb-3">
             <form action="{{ route('logout') }}" method="POST" class="mb-3 mx-4">

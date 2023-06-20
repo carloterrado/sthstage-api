@@ -34,7 +34,6 @@
                     <li><a href="{{ route('wheelgetmspn') }}">GetMspn</a></li>
                     <li><a href="{{ route('wheelgetsize') }}">GetSize</a></li>
                     <li><a href="{{ route('getwheelsbyvehicle') }}">GetWheels by vehicle</a></li>
-
                 </ul>
             </div>
         </div>
@@ -69,5 +68,7 @@
                 </ul>
             </div>
         </div>
+        <h6><a href="{{ route('users') }}">Back to users</a></h6>
+
     </div>
 </nav>
