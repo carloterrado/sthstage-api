@@ -170,7 +170,7 @@ class UserController extends Controller
     }
 
     public function userManagementPage(){
-        $users = DB::table('users')->get();
+        $users = DB::table('users')->paginate(10);
         // dd($users);
         return view('settings.userManagement.userManagement')->with(compact('users'));
     }
@@ -192,6 +192,12 @@ class UserController extends Controller
                 'session_id' => ''
             ]);
 
+        return redirect()->back();
+    }
+
+    public function deleteUser($id){
+        DB::table('users')->where('id', $id)->delete();
+        
         return redirect()->back();
     }
 

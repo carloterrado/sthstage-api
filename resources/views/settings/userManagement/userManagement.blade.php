@@ -43,20 +43,30 @@
                     </thead>
                     <tbody>
                         @foreach($users as $user)
-                            <tr>
-                                <td class="text-center"><b>{{ $loop->iteration }}</b></td>
-                                <td class="text-center">{{ $user->firstname . ' ' . $user->lastname }}</td>
-                                <td class="text-center">{{ $user->email }}</td>
-                                <td class="text-center">{{ $user->role }}</td>
-                                <td class="text-center">
-                                    <button class="btn"><i class="fas fa-pencil-alt"></i></button>
-                                    <button class="btn"><i class="fas fa-trash"></i></button>
-                                </t class="text-center"d>
-                            </tr>
+                        <tr>
+                            <td class="text-center"><b>{{ ($users->currentPage() - 1) * $users->perPage() + $loop->iteration }}</b></td>
+                            <td class="text-center">{{ $user->firstname . ' ' . $user->lastname }}</td>
+                            <td class="text-center">{{ $user->email }}</td>
+                            <td class="text-center">{{ $user->role }}</td>
+                            <td class="text-center">
+                                <button class="btn"><i class="fas fa-pencil-alt"></i></button>
+                                <button class="btn" data-bs-toggle="modal" data-bs-target="#deleteUserModal{{ $user->id }}"><i class="fas fa-trash"></i></button>
+                                @include('settings.userManagement.deleteUserModal')
+                            </td class="text-center">
+                        </tr>
                         @endforeach
                         <!-- Add more rows as needed -->
                     </tbody>
                 </table>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                    @if ($users->previousPageUrl())
+                    <a href="{{ $users->previousPageUrl() }}" class="rounded-pill btn btn-secondary" style="width: 150px;"><i class="fas fa-arrow-left"></i> Previous Page</a>
+                    @endif
+
+                    @if ($users->hasMorePages())
+                    <a href="{{ $users->nextPageUrl() }}" class="rounded-pill fs-6 btn btn-secondary" style="width: 150px;">Next Page <i class="fas fa-arrow-right"></i></a>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
