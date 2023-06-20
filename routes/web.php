@@ -71,4 +71,30 @@ Route::middleware('auth')->group(function () {
     //View Catalog
     Route::get('/catalog', [ExcelImporterController::class, 'index'])->name('catalog');
     Route::post('/import', [ExcelImporterController::class, 'import'])->name('import');
+
+    // Documentation
+    Route::get('document-introduction', [DocumentationController::class, 'home'])->name('home');
+
+    // Vehicle API
+    Route::get('vehicle-getyears', [DocumentationController::class, 'getyears'])->name('getyears');
+    Route::get('vehicle-getmakes', [DocumentationController::class, 'getmakes'])->name('getmakes');
+    Route::get('vehicle-getmodels', [DocumentationController::class, 'getmodels'])->name('getmodels');
+    Route::get('vehicle-getoptions', [DocumentationController::class, 'getoptions'])->name('getoptions');
+    Route::get('vehicle-getsize', [DocumentationController::class, 'getsize'])->name('getsize');
+
+    // Wheel API
+    Route::get('wheel-getbrand', [DocumentationController::class, 'wheelgetbrand'])->name('wheelgetbrand');
+    Route::get('wheel-getmspn', [DocumentationController::class, 'wheelgetmspn'])->name('wheelgetmspn');
+    Route::get('wheel-getsize', [DocumentationController::class, 'wheelgetsize'])->name('wheelgetsize');
+    Route::get('wheels-by-vehicle', [DocumentationController::class, 'getwheelsbyvehicle'])->name('getwheelsbyvehicle');
+
+    // Tire API
+    Route::get('tire-getbrand', [DocumentationController::class, 'tiregetbrand'])->name('tiregetbrand');
+    Route::get('tire-getmspn', [DocumentationController::class, 'tiregetmspn'])->name('tiregetmspn');
+    Route::get('tire-getsize', [DocumentationController::class, 'tiregetsize'])->name('tiregetsize');
+    Route::get('tires-by-vehicle', [DocumentationController::class, 'gettiresbyvehicle'])->name('gettiresbyvehicle');
+
+    // Inventory API
+    Route::get('inventory-getlocation', [DocumentationController::class, 'getlocation'])->name('getlocation');
+    Route::get('inventory-price-by-location', [DocumentationController::class, 'getinventorybylocation'])->name('getinventorybylocation');
 });
