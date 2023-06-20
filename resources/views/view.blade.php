@@ -1,10 +1,12 @@
 @extends('layouts.mainlayout')
 
 @section('content')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
 <div class="container-fluid">
     <div class="row">
         <div class="col-2 bg-dark text-light side-bar">
-            <div class="position-fixed top-0 start-0 bg-dark text-light side-bar">
+            <div class="position-absolute top-0 start-0 bg-dark text-light side-bar">
                 <!-- Sidebar content goes here -->
                 @include('settings.settings')
             </div>
@@ -14,20 +16,24 @@
                 <div class="row justify-content-center">
                     <div class="col-md-12">
                         <div class="card">
-                            <div class="card-header h2 d-flex justify-content-between">
-                                Catalog
-                            </div>
+                            <!-- <div class="container mt-4">
+                                <div class="input-group">
+                                    <label class="input-group-text bg-white" for="search"><i class="fa fa-search"></i></label>
+                                    <input type="text" class="form-control rounded-right" id="search" placeholder="Search">
+                                </div>
+                            </div> -->
                             <div class="card-body">
-                                <div class="container mt-4">
-                                    <div class="row justify-content-between">
-                                        <form action="{{ route('import') }}" method="POST" enctype="multipart/form-data">
-                                            @csrf
-                                            <div class="input-group">
-                                                <input class="form-control" type="file" name="excel_file" accept=".csv,.xls,.xlsx">
-                                                <button type="submit" class="btn btn-warning">Upload</button>
+                                <div class="container mt-2">
+                                    <form action="{{ route('import') }}" method="POST" enctype="multipart/form-data">
+                                        @csrf
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="h2">CATALOG</div>
+                                            <div class="input-group d-grid gap-2 d-md-flex justify-content-md-end">
+                                                <input class="" type="file" name="excel_file" accept=".csv,.xls,.xlsx">
+                                                <button type="submit" class="rounded-pill p-2 fs-6 btn btn-secondary" style="width: 210px;"><i class="fa-solid fa-file-arrow-up"></i> UPLOAD A NEW FILE</button>
                                             </div>
-                                        </form>
-                                    </div>
+                                        </div>
+                                    </form>
                                 </div>
                                 @if(isset($empty))
                                 <p class="text-center fs-3 mt-4">{{ $empty }}</p>
@@ -238,13 +244,13 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                <div class="text-center mt-4">
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
                                     @if ($rows->previousPageUrl())
-                                    <a href="{{ $rows->previousPageUrl() }}" class="btn btn-primary">Previous Page</a>
+                                    <a href="{{ $rows->previousPageUrl() }}" class="rounded-pill btn btn-secondary" style="width: 150px;"><i class="fas fa-arrow-left"></i> Previous Page</a>
                                     @endif
 
                                     @if ($rows->hasMorePages())
-                                    <a href="{{ $rows->nextPageUrl() }}" class="btn btn-primary">Next Page</a>
+                                    <a href="{{ $rows->nextPageUrl() }}" class="rounded-pill fs-6 btn btn-secondary" style="width: 150px;">Next Page <i class="fas fa-arrow-right"></i></a>
                                     @endif
                                 </div>
                                 @endif

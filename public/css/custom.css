@@ -1,6 +1,5 @@
 /* Import the VS Code-like theme for Prism.js */
 @import url('https://cdn.jsdelivr.net/npm/prism-themes/themes/prism-vsc-dark-plus.css');
-
 :root {
     --color1: rgb(1, 4, 9);
     --color2: rgb(22, 27, 34);
@@ -76,4 +75,11 @@ pre {
 .image {
     width: 12vw;
     height: 12vh;
+}
+
+.center-form{
+    margin-left: 4vw;
+    margin-right: 4vw;
+    margin-top: 4vh;
+    margin-bottom: 4vh; 
 }
