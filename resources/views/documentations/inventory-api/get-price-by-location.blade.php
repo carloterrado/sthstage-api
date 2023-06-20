@@ -12,18 +12,19 @@
             <h3>Get Inventory/Price by Location</h3>
             <p>Get a list of inventory and prices by locations for the specified parameters.</p>
             <h3>HTTP Request</h3>
-            <p><code>https://api/v1/catalog/inventory</code></p>
+            <p><code>{{ url('/api/v1/catalog/inventory') }}</code></p>
             <h3>Parameters</h3>
             <p>mspn</p>
             <p>brand</p>
 
             <h3>JSON</h3>
-            <p>To get a list of inventory and prices by locations that are available in the MSPN - 001770 or Brand - BRIDGESTONE:</p>
+            <p>To get a list of inventory and prices by locations that are available in the MSPN - 001770 or Brand -
+                BRIDGESTONE:</p>
 
             <div class="divider"></div>
             <pre>
 <code class="language-json" style=" color:aqua ">
-<p>GET https://api/v1/catalog/inventory</p>
+<p>GET {{ url('/api/v1/catalog/inventory') }}</p>
 {
 "mspn": 001770,
 "brand": BRIDGESTONE

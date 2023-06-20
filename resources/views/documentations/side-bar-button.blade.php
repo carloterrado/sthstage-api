@@ -30,6 +30,7 @@
             </h6>
             <div id="wheelCollapse" class="collapse">
                 <ul class="list-unstyled">
+                    <li><a href="{{ route('wheelget') }}">GetWheels</a></li>
                     <li><a href="{{ route('wheelgetbrand') }}">GetBrand</a></li>
                     <li><a href="{{ route('wheelgetmspn') }}">GetMspn</a></li>
                     <li><a href="{{ route('wheelgetsize') }}">GetSize</a></li>
@@ -46,6 +47,7 @@
             </h6>
             <div id="tireCollapse" class="collapse">
                 <ul class="list-unstyled">
+                    <li><a href="{{ route('tireget') }}">GetTires</a></li>
                     <li><a href="{{ route('tiregetbrand') }}">GetBrand</a></li>
                     <li><a href="{{ route('tiregetmspn') }}">GetMspn</a></li>
                     <li><a href="{{ route('tiregetsize') }}">GetSize</a></li>

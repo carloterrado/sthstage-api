@@ -41,6 +41,11 @@ class DocumentationController extends Controller
 
     // Wheel API
 
+    public function wheelget()
+    {
+        return view('documentations.wheel-api.get-wheels');
+    }
+
     public function wheelgetbrand()
     {
         return view('documentations.wheel-api.get-brand');
@@ -60,6 +65,11 @@ class DocumentationController extends Controller
 
 
      // Tire API
+
+     public function tireget()
+     {
+         return view('documentations.tire-api.get-tires');
+     }
 
      public function tiregetbrand()
      {

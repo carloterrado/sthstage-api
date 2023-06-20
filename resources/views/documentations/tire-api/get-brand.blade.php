@@ -12,7 +12,7 @@
             <h3>Tire Get by brand</h3>
             <p>Get a list of tires by brand for the specified parameters.</p>
             <h3>HTTP Request</h3>
-            <p><code>https://api/v1/catalog/tires</code></p>
+            <p><code>{{ url('/api/v1/catalog/tires') }}</code></p>
             <h3>Parameters</h3>
             <p>brand</p>
             <h3>Optional Parameters</h3>
@@ -26,7 +26,7 @@
             <div class="divider"></div>
             <pre>
         <code class="language-json" style=" color:aqua ">
-<p>GET https://api/v1/catalog/tires</p>
+<p>GET {{ url('/api/v1/catalog/tires') }}</p>
 {
 "brand": DELINTE
 }
