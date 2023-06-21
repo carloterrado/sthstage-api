@@ -22,7 +22,7 @@ use League\CommonMark\Node\Block\Document;
 
 
 // Documentation
-Route::get('document-introduction', [DocumentationController::class, 'home'])->name('home');
+Route::get('/', [DocumentationController::class, 'home'])->name('home');
 
 // Vehicle API
 Route::get('vehicle-getyears', [DocumentationController::class, 'getyears'])->name('getyears');
