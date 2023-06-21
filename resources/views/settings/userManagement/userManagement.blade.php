@@ -49,7 +49,8 @@
                             <td class="text-center">{{ $user->email }}</td>
                             <td class="text-center">{{ $user->role }}</td>
                             <td class="text-center">
-                                <button class="btn"><i class="fas fa-pencil-alt"></i></button>
+                                <button class="btn" data-bs-toggle="modal" data-bs-target="#editUserModal{{ $user->id }}"><i class="fas fa-pencil-alt"></i></button>
+                                @include('settings.userManagement.editUserModal')
                                 <button class="btn" data-bs-toggle="modal" data-bs-target="#deleteUserModal{{ $user->id }}"><i class="fas fa-trash"></i></button>
                                 @include('settings.userManagement.deleteUserModal')
                             </td class="text-center">
