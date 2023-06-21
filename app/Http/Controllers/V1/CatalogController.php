@@ -18,31 +18,37 @@ use Lcobucci\JWT\Token\Parser;
 class CatalogController extends Controller
 {
     protected $vehicleToken;
+    protected $excludeColumns;
+    protected $additionalColumnsToExclude;
+    protected $tableColumns;
+    protected $client;
 
     public function __construct()
     {
         $credential = [
-            'Username' => 'ejay@atvtireinc.com',
-            'Password' => 'palekey67'
+            'Username' => env('RIDESTYLER_USERNAME'),
+            'Password' => env('RIDESTYLER_PASSWORD'),
         ];
         $response = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Auth/Start", $credential);
 
         $this->vehicleToken = $response->json('Token');
+
+
+        $bearerToken = request()->bearerToken();
+
+        $tokenId = (new Parser(new JoseEncoder()))->parse($bearerToken)->claims()
+            ->all()['jti'];
+        $this->client = Token::find($tokenId)->client;
+        $this->excludeColumns = json_decode($this->client->catalog_column_settings);
+        $this->additionalColumnsToExclude = ['updated_at', 'created_at'];
+        $this->tableColumns = Schema::getColumnListing('catalog');
     }
 
 
     public function getWheels(Request $request)
     {
-        $bearerToken = request()->bearerToken();
-
-        $tokenId = (new Parser(new JoseEncoder()))->parse($bearerToken)->claims()
-            ->all()['jti'];
-        $client = Token::find($tokenId)->client;
-        $excludeColumns = json_decode($client->catalog_column_settings);
-        $additionalColumnsToExclude = ['updated_at', 'created_at'];
-        $tableColumns = Schema::getColumnListing('catalog');
-
+    
         if ((!$request->has('wheel_diameter') && !$request->has('wheel_width')) && ($request->has('brand') || $request->has('mspn'))) {
             // return $catalog_key;
             $data = DB::table('catalog')
@@ -53,7 +59,7 @@ class CatalogController extends Controller
                 ->when($request->has('mspn'), function ($query) use ($request) {
                     $query->where('mspn', $request->mspn);
                 })
-                ->select(array_diff($tableColumns, array_merge($excludeColumns, $additionalColumnsToExclude)))
+                ->select(array_diff($this->tableColumns, array_merge($this->excludeColumns, $this->additionalColumnsToExclude)))
                 ->get();
 
             return response()->json(['data' => $data]);
@@ -79,7 +85,7 @@ class CatalogController extends Controller
                 ->when($request->has('mspn'), function ($query) use ($request) {
                     $query->where('mspn', $request->mspn);
                 })
-                ->select(array_diff($tableColumns, array_merge($excludeColumns, $additionalColumnsToExclude)))
+                ->select(array_diff($this->tableColumns, array_merge($this->excludeColumns, $this->additionalColumnsToExclude)))
                 ->get();
             return response()->json(['data' => $data]);
         }
@@ -94,17 +100,6 @@ class CatalogController extends Controller
     public function getTires(Request $request)
     {
 
-
-        $bearerToken = request()->bearerToken();
-
-        $tokenId = (new Parser(new JoseEncoder()))->parse($bearerToken)->claims()
-            ->all()['jti'];
-        $client = Token::find($tokenId)->client;
-        $excludeColumns = json_decode($client->catalog_column_settings);
-        $additionalColumnsToExclude = ['updated_at', 'created_at'];
-        $tableColumns = Schema::getColumnListing('catalog');
-
-
         if ((!$request->has('section_width') && !$request->has('aspect_ratio') && !$request->has('rim_diameter')) && ($request->has('brand') || $request->has('mspn'))) {
             $data = DB::table('catalog')
                 ->where('category', 1)
@@ -114,7 +109,7 @@ class CatalogController extends Controller
                 ->when($request->has('mspn'), function ($query) use ($request) {
                     $query->where('mspn', $request->mspn);
                 })
-                ->select(array_diff($tableColumns, array_merge($excludeColumns, $additionalColumnsToExclude)))
+                ->select(array_diff($this->tableColumns, array_merge($this->excludeColumns, $this->additionalColumnsToExclude)))
                 ->get();
 
             return response()->json(['data' => $data]);
@@ -142,7 +137,7 @@ class CatalogController extends Controller
                 ->when($request->has('mspn'), function ($query) use ($request) {
                     $query->where('mspn', $request->mspn);
                 })
-                ->select(array_diff($tableColumns, array_merge($excludeColumns, $additionalColumnsToExclude)))
+                ->select(array_diff($this->tableColumns, array_merge($this->excludeColumns, $this->additionalColumnsToExclude)))
                 ->get();
             return response()->json(['data' => $data]);
         }
@@ -306,7 +301,7 @@ class CatalogController extends Controller
         $requestOption = [
             'Search' => $exactMatch,
         ];
-
+       
         $response = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetTireOptionDetails?Token=" . $this->vehicleToken, $requestOption)->json();
 
@@ -315,28 +310,15 @@ class CatalogController extends Controller
                 'full_size' => $detail['Front']['Size'],
             ];
         });
+
         $filteredSize = $details->filter(function ($detail) use ($request) {
             return $detail['full_size'] === $request->size;
         })->values();
 
 
-
-        $bearerToken = request()->bearerToken();
-        $tokenId = (new Parser(new JoseEncoder()))->parse($bearerToken)->claims()
-            ->all()['jti'];
-        $client = Token::find($tokenId)->client;
-        $excludeColumns = json_decode($client->catalog_column_settings);
-        $additionalColumnsToExclude = ['updated_at', 'created_at'];
-        $tableColumns = Schema::getColumnListing('catalog');
-
-
         $data = DB::table('catalog')
-            // ->whereIn('section_width', $details->pluck('Width'))
-            // ->whereIn('aspect_ratio', $details->pluck('AspectRatio'))
-            // ->whereIn('rim_diameter', $details->pluck('InsideDiameter'))
             ->whereIn('full_size', $filteredSize->pluck('full_size'))
-
-            ->select(array_diff($tableColumns, array_merge($excludeColumns, $additionalColumnsToExclude)))
+            ->select(array_diff($this->tableColumns, array_merge($this->excludeColumns, $this->additionalColumnsToExclude)))
             ->get();
 
         return response()->json(['data' => $data]);
@@ -383,16 +365,7 @@ class CatalogController extends Controller
         //get inside diameter from gettireoptiondetails
         $insideDiameter = $getTireOptDetails['Details'][0]['Front']['InsideDiameter'];
 
-        // return $insideDiameter;
-
-        $bearerToken = request()->bearerToken();
-
-        $tokenId = (new Parser(new JoseEncoder()))->parse($bearerToken)->claims()
-            ->all()['jti'];
-        $client = Token::find($tokenId)->client;
-        $excludeColumns = json_decode($client->catalog_column_settings);
-        $additionalColumnsToExclude = ['updated_at', 'created_at'];
-        $tableColumns = Schema::getColumnListing('catalog');
+       
 
         $catalog = DB::table('catalog')
             ->where('center_bore', '>=', $getFitments['Fitments'][0]['VehicleFitmentHub'])
@@ -402,7 +375,7 @@ class CatalogController extends Controller
             ->where('bolt_pattern_1', '=', $getBoltPatterns['BoltPatterns'][1]['BoltPatternBoltCount'])
             ->where('wheel_diameter', '=', $insideDiameter)
             ->where('full_size', $request->size)
-            ->select(array_diff($tableColumns, array_merge($excludeColumns, $additionalColumnsToExclude)))
+            ->select(array_diff($this->tableColumns, array_merge($this->excludeColumns, $this->additionalColumnsToExclude)))
             ->get();
 
         return response()->json(['data' => $catalog]);
