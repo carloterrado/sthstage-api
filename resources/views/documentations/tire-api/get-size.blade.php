@@ -12,7 +12,7 @@
             <h3>Tire get by size</h3>
             <p>Get a list of tires by size for the specified parameters.</p>
             <h3>HTTP Request</h3>
-            <p><code>https://api/v1/catalog/tires</code></p>
+            <p><code>{{ url('/api/v1/catalog/tires') }}</code></p>
             <h3>Parameters</h3>
             <p>section_width</p>
             <p>aspect_ratio</p>
@@ -26,7 +26,7 @@
             <div class="divider"></div>
             <pre>
             <code class="language-json" style=" color:aqua ">
-<p>GET https://api/v1/catalog/tires</p>
+<p>GET {{ url('/api/v1/catalog/tires') }}</p>
 {
 "section_width": 275,
 "aspect_ratio": 25,

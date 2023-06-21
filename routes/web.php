@@ -25,7 +25,6 @@ use League\CommonMark\Node\Block\Document;
 
 
 
-
 Route::middleware('guest')->group(function () {
     Route::get('/login', [UserController::class, 'showLoginForm'])->name('viewlogin');
     Route::post('/login-submit', [UserController::class, 'login'])->name('login');
@@ -42,12 +41,14 @@ Route::middleware('guest')->group(function () {
     Route::get('vehicle-getsize', [DocumentationController::class, 'getsize'])->name('getsize');
 
     // Wheel API
+    Route::get('wheels', [DocumentationController::class, 'wheelget'])->name('wheelget');
     Route::get('wheel-getbrand', [DocumentationController::class, 'wheelgetbrand'])->name('wheelgetbrand');
     Route::get('wheel-getmspn', [DocumentationController::class, 'wheelgetmspn'])->name('wheelgetmspn');
     Route::get('wheel-getsize', [DocumentationController::class, 'wheelgetsize'])->name('wheelgetsize');
     Route::get('wheels-by-vehicle', [DocumentationController::class, 'getwheelsbyvehicle'])->name('getwheelsbyvehicle');
 
     // Tire API
+    Route::get('tires', [DocumentationController::class, 'tireget'])->name('tireget');
     Route::get('tire-getbrand', [DocumentationController::class, 'tiregetbrand'])->name('tiregetbrand');
     Route::get('tire-getmspn', [DocumentationController::class, 'tiregetmspn'])->name('tiregetmspn');
     Route::get('tire-getsize', [DocumentationController::class, 'tiregetsize'])->name('tiregetsize');
@@ -61,6 +62,10 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/settings', [SettingsController::class, 'showSettings']);
     Route::get('/users', [UserController::class, 'getUsers'])->name('users');
+
+    Route::get('/user-management', [UserController::class, 'userManagementPage'])->name('userManagementPage');
+    Route::post('/add-user', [UserController::class, 'addUser'])->name('addUser');
+    Route::post('/delete-user/{id}', [UserController::class, 'deleteUser'])->name('deleteUser');
     Route::get('/users-column-settings/{id}', [UserController::class, 'showUserCatalogSettings'])->name('user.column.settings');
     Route::post('update-user-column-settings/{id}', [UserController::class, 'updateUserColumnSettings'])->name('update.user.column.settings');
     Route::post('settings/catalog', [SettingsController::class, 'submitCatalog'])->name('submitCatalog');
@@ -70,4 +75,3 @@ Route::middleware('auth')->group(function () {
     Route::get('/catalog', [ExcelImporterController::class, 'index'])->name('catalog');
     Route::post('/import', [ExcelImporterController::class, 'import'])->name('import');
 });
-

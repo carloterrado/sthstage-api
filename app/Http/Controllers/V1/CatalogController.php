@@ -396,7 +396,13 @@ class CatalogController extends Controller
         $client = Token::find($tokenId)->client;
         // USE this variable when client column is created in oauth_clients table
         $clientChannel = json_decode($client->channel);
- 
+
+        $firstData = DB::table('inventory_upload_logs')
+            ->select('id')
+            ->orderBy('created_at', 'asc')
+            ->first();
+
+            
         $data = DB::table('inventory_feed AS i')
             ->select(
                 'i.brand',
@@ -417,6 +423,7 @@ class CatalogController extends Controller
             ->where('i.brand', $request->brand)
             // Change the default 329 value by $clientChannel variable 
             ->where('n.channel', 329)
+            ->where('n.upload_id', $firstData->id)
             ->get();
 
         return  CatalogInventoryPriceResource::make($data);
