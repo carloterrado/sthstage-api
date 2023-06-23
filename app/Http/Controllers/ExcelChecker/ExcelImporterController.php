@@ -7,6 +7,7 @@ use App\Models\Catalog;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Schema;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
@@ -19,7 +20,9 @@ class ExcelImporterController extends Controller
         if (empty($rows)) {
             return view('view',  ['empty' => 'The Database is empty.']);
         } else {
-            return view('view', ['rows' => $rows]);
+            $databaseColumnNames = Schema::getColumnListing('catalog');
+
+            return view('view', ['rows' => $rows, 'columns' => $databaseColumnNames]);
         }
     }
     public function Import(Request $request)
@@ -40,11 +43,12 @@ class ExcelImporterController extends Controller
         $collection = collect($worksheet);
         $dataIndexNames = $collection->values()->toArray();
         $dataIndexNamesString = implode(', ', $dataIndexNames);
+        // dd($dataIndexNamesString);
 
 
         $databaseColumnNames = Schema::getColumnListing('catalogs');
         array_shift($databaseColumnNames); // Remove the first element from the array
-        $indexNamesString = implode(', ', $databaseColumnNames);;
+        $indexNamesString = implode(', ', $databaseColumnNames);
         // dd($indexNamesString);
 
         $areColumnsEqual = ($dataIndexNamesString === $indexNamesString);
@@ -63,7 +67,7 @@ class ExcelImporterController extends Controller
                     return array_combine($dataIndexNames, $row);
                 })->each(function ($row) {
                     $primaryKey = ['brand' => $row['brand'], 'mspn' => $row['mspn']];
-                    DB::table('catalog')::updateOrCreate($primaryKey, $row);
+                    Catalog::updateOrCreate($primaryKey, $row);
                 });
             }
             return redirect()->back()->with(['match' => 'Excel imported successfully', 'rows' => $rows]);

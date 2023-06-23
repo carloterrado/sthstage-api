@@ -52,7 +52,6 @@
                     <li><a href="{{ route('tiregetmspn') }}">GetMspn</a></li>
                     <li><a href="{{ route('tiregetsize') }}">GetSize</a></li>
                     <li><a href="{{ route('gettiresbyvehicle') }}">GetTires by vehicle</a></li>
-
                 </ul>
             </div>
         </div>
