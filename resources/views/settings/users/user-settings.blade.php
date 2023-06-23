@@ -16,7 +16,7 @@
                 <form method="post" action="{{ route('update.user.column.settings', ['id' => $id]) }}">
                     @csrf
                     <div class="intro p-2 rounded-4">
-                        <h2 id="example" class="mt-2">Hidden Catalog Column For User</h2>
+                        <h2 id="example" class="mt-2">API Access Authorization</h2>
                         <div class="row mt-lg-5">
                             {{-- column 1 --}}
                             <div class="col-md-2">
@@ -152,12 +152,15 @@
     </div>
 </div>
 
-<div class="row my-4">
-    <div class="col-md-12">
-        <div class="form-group d-flex justify-content-end">
-            <button class="btn btn-secondary me-2">Back</button>
-            <input type="submit" class="btn btn-primary" value="Submit">
+<div class="has-bg-img">
+    <div class="row my-4">
+        <div class="col-md-12">
+            <div class="form-group d-flex justify-content-end">
+                <button class="btn btn-secondary me-2">Back</button>
+                <input type="submit" class="btn btn-primary" value="Submit">
+            </div>
         </div>
+        <img src="" alt="">
     </div>
 </div>
 </div>
