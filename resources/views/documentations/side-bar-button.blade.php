@@ -2,7 +2,7 @@
     <div class="mx-4 mt-lg-5 ">
 
 
-        <a href="{{ route('home') }}"> <img src="{{asset('kimlogo.png')}}" alt="logo" class="image"></a><br>
+        <a href="{{ route('home') }}"> <img src="{{ asset('kimlogo.png') }}" alt="logo" class="image"></a><br>
         <h6><a href="{{ route('home') }}">Introduction</a></h6>
         <div>
             <h6>
@@ -21,7 +21,7 @@
                 </ul>
             </div>
         </div>
-        <div> 
+        <div>
             <h6>
                 <a class="collapsed" data-bs-toggle="collapse" data-bs-target="#wheelCollapse" aria-expanded="false"
                     aria-controls="wheelCollapse">
