@@ -7,6 +7,7 @@ use App\Models\Catalog;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class ExcelImporterController extends Controller
@@ -41,9 +42,9 @@ class ExcelImporterController extends Controller
         $dataIndexNamesString = implode(', ', $dataIndexNames);
 
 
-        $databaseColumnNames = Catalog::find(1)->toArray();
-        $indexNames = array_keys($databaseColumnNames);
-        $indexNamesString = implode(', ', $indexNames);
+        $databaseColumnNames = Schema::getColumnListing('catalogs');
+        array_shift($databaseColumnNames); // Remove the first element from the array
+        $indexNamesString = implode(', ', $databaseColumnNames);;
         // dd($indexNamesString);
 
         $areColumnsEqual = ($dataIndexNamesString === $indexNamesString);

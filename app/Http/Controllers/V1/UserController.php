@@ -206,8 +206,26 @@ class UserController extends Controller
         return redirect()->back();
     }
 
-    public function showLoginForm()
-    {
+
+    public function editUser(Request $request, $id){
+        DB::table('users')
+            ->where('id', $id)
+            ->update([
+                'firstname' => $request->firstname,
+                'lastname' => $request->lastname,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role' => $request->role,
+                'status' => (int) $request->status,
+                'seenlog' => (int) $request->seenlog,
+                'display_user' => (int) $request->display_user,
+            ]);
+
+        return redirect()->back();
+    }
+
+    public function showLoginForm(){
+
         return view('login.login');
     }
 

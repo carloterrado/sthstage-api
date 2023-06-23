@@ -37,6 +37,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/user-management', [UserController::class, 'userManagementPage'])->name('userManagementPage');
     Route::post('/add-user', [UserController::class, 'addUser'])->name('addUser');
     Route::post('/delete-user/{id}', [UserController::class, 'deleteUser'])->name('deleteUser');
+    Route::post('/edit-user/{id}', [UserController::class, 'editUser'])->name('editUser');
     Route::get('/users-column-settings/{id}', [UserController::class, 'showUserCatalogSettings'])->name('user.column.settings');
     Route::post('update-user-column-settings/{id}', [UserController::class, 'updateUserColumnSettings'])->name('update.user.column.settings');
     Route::post('settings/catalog', [SettingsController::class, 'submitCatalog'])->name('submitCatalog');
