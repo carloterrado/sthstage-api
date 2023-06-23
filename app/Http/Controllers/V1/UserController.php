@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers\V1;
 
-use App\Http\Controllers\Controller;
 use App\Models\OauthClient;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
     public function userLogin(Request $request)
     {
-      
+
         if ($request->isMethod('post')) {
             $validator = Validator::make($request->all(), [
                 'email' => 'required',
@@ -34,7 +35,7 @@ class UserController extends Controller
             }
         }
 
-        return 'Login';
+        return response()->json(['error' => 'Invalid credentials'], Response::HTTP_UNAUTHORIZED);
     }
 
     public function getUsers()
@@ -146,19 +147,19 @@ class UserController extends Controller
         ];
 
         $client = OauthClient::select('id', 'catalog_column_settings')->where('id', $id)->first()->toArray();
-       
 
-        return view('settings.users.user-settings')->with(compact('client', 'columns','id'));
+
+        return view('settings.users.user-settings')->with(compact('client', 'columns', 'id'));
     }
 
     public function updateUserColumnSettings(Request $request, $id)
     {
-        
+
         try {
-          
+
             $tableColumns = Schema::getColumnListing('catalog');
             $filteredColumns = array_diff($tableColumns, $request->column);
-       
+
             OauthClient::where('id', $id)->update([
                 'catalog_column_settings' => json_encode(array_values($filteredColumns))
             ]);
@@ -170,13 +171,15 @@ class UserController extends Controller
         }
     }
 
-    public function userManagementPage(){
+    public function userManagementPage()
+    {
         $users = DB::table('users')->orderBy('created_at', 'desc')->paginate(10);
         // dd($users);
         return view('settings.userManagement.userManagement')->with(compact('users'));
     }
 
-    public function addUser(Request $request){
+    public function addUser(Request $request)
+    {
         // dd($request->all());
         $userData = DB::table('users')
             ->insert([
@@ -196,11 +199,13 @@ class UserController extends Controller
         return redirect()->back();
     }
 
-    public function deleteUser($id){
+    public function deleteUser($id)
+    {
         DB::table('users')->where('id', $id)->delete();
-        
+
         return redirect()->back();
     }
+
 
     public function editUser(Request $request, $id){
         DB::table('users')
@@ -220,21 +225,24 @@ class UserController extends Controller
     }
 
     public function showLoginForm(){
+
         return view('login.login');
     }
 
-    public function login(Request $request){
-        
+    public function login(Request $request)
+    {
+
 
         if (Auth::attempt($request->only('email', 'password'))) {
             return redirect('/users');
-        }else{
+        } else {
             return redirect('login');
         }
     }
 
 
-    public function logout(Request $request){
+    public function logout(Request $request)
+    {
         Auth::logout();
 
         return redirect('/login');
