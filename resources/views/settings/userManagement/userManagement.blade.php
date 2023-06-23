@@ -17,7 +17,7 @@
         <!-- Main Content -->
         <div class="col-10">
             <div class="container">
-                <h3 class="my-5">User Management</h3>
+                <h3 class="my-5">Role Management</h3>
                 <div class="row my-5">
                     <div class="col-8">
                         <input type="text" class="form-control" placeholder="Search">
