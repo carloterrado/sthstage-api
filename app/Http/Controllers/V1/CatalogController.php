@@ -150,8 +150,10 @@ class CatalogController extends Controller
     }
 
 
-    public function getVehicleYear()
+    public function getVehicleYear(Request $request)
     {
+        
+        
 
         return Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetYears?Token=" . $this->vehicleToken)
@@ -161,6 +163,8 @@ class CatalogController extends Controller
 
     public function getVehicleByMakes(Request $request)
     {
+
+
 
         $request->validate([
             'year' => 'required',
