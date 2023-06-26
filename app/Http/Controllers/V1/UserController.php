@@ -182,14 +182,14 @@ class UserController extends Controller
         // $users = DB::table('users')->orderBy('created_at', 'desc')->paginate(10);
 
         $roles = DB::table('user_roles')->where('id', '!=', null)
-        ->get()->toArray();
-        
+            ->get()->toArray();
+
         $users = DB::table('users')
-        ->leftJoin('user_roles', 'users.role', '=', 'user_roles.role')
-        ->select('user_roles.*', 'users.*')
-        ->orderBy('users.created_at', 'desc')
-        ->paginate(10);
-        
+            ->leftJoin('user_roles', 'users.role', '=', 'user_roles.role')
+            ->select('user_roles.*', 'users.*')
+            ->orderBy('users.created_at', 'desc')
+            ->paginate(10);
+
         // dd($users);
         return view('settings.userManagement.userManagement')->with(compact('users', 'roles'));
     }
@@ -270,7 +270,22 @@ class UserController extends Controller
     {
         $roles = DB::table('user_roles')->where('id', '!=', null)
             ->get()->toArray();
-    
+
+        return view('settings.users.users')->with(compact('roles'));
+    }
+
+    public function searchRole(Request $request)
+    {
+        $searchTerm = $request->input('search');
+
+        $roles = DB::table('user_roles')
+            ->where('id', '!=', null)
+            ->where(function ($query) use ($searchTerm) {
+                $query->where('role', 'LIKE', '%' . $searchTerm . '%');
+            })
+            ->get()
+            ->toArray();
+
         return view('settings.users.users')->with(compact('roles'));
     }
 
@@ -291,5 +306,29 @@ class UserController extends Controller
         DB::table('user_roles')->where('id', $id)->delete();
 
         return redirect()->back();
+    }
+
+    public function searchUser(Request $request)
+    {
+        $searchTerm = $request->input('search');
+
+        $roles = DB::table('user_roles')->where('id', '!=', null)
+            ->get()->toArray();
+
+        $searchTerm = $request->input('search');
+        
+        $users = DB::table('users')
+        ->leftJoin('user_roles', 'users.role', '=', 'user_roles.role')
+        ->select('user_roles.*', 'users.*')
+        ->where(function ($query) use ($searchTerm) {
+            $query->where(DB::raw("CONCAT(users.firstname, ' ', users.lastname)"), 'LIKE', '%' . $searchTerm . '%')
+                ->orWhere('users.email', 'LIKE', '%' . $searchTerm . '%')
+                ->orWhere('users.role', 'LIKE', '%' . $searchTerm . '%');
+        })
+        ->orderBy('users.created_at', 'desc')
+        ->paginate(10);
+    
+
+        return view('settings.userManagement.userManagement')->with(compact('users', 'roles'));
     }
 }
