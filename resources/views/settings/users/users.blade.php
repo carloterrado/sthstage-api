@@ -1,6 +1,8 @@
 @extends('layouts.mainlayout')
 
 @section('content')
+    @include('settings.users.role-modal')
+
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
@@ -21,33 +23,44 @@
                         </div>
                         <div class="col-4">
                             <div class="d-flex justify-content-end">
-                                <a href="" class="btn btn-dark me-3 d-flex align-items-center"><span
+                                {{-- <a href="" class="btn btn-dark me-3 d-flex align-items-center"><span
                                         class="material-symbols-outlined">
                                         filter_alt
                                     </span> FILTER</a>
-                                <a href="" class="btn btn-dark d-flex align-items-center"><span
+                                <button class="btn btn-dark d-flex align-items-center" type="button" data-bs-toggle="modal" data-bs-target="#addRoleModal"><span
                                         class="material-symbols-outlined">
                                         add
-                                    </span> ADD</a>
+                                    </span> ADD</button> --}}
+                                <a href="" class="btn btn-dark me-3 d-flex align-items-center">FILTER</a>
+                                <button class="btn btn-dark d-flex align-items-center" type="button" data-bs-toggle="modal"
+                                    data-bs-target="#addRoleModal">ADD</button>
                             </div>
                         </div>
                     </div>
 
-                    {{-- User List --}}
-                    @foreach ($users as $user)
+                    {{-- User Role --}}
+                    @foreach ($roles as $role)
                         <div class="bg-white p-4 my-3 rounded-2 align-items-center d-flex justify-content-end">
                             <div class="col">
-                                {{ $user->name }}
+                                {{ ucfirst(strtolower($role->role)) }}
                             </div>
                             <div class="col-2 d-flex justify-content-end">
-                                {{-- <a href="{{ route('user.column.settings', ['id' => $user->id]) }}">
-                                    <button type="button" class="btn btn-secondary me-3 d-flex align-items-center">
-                                        <span class="material-symbols-outlined">visibility</span>View Access
-                                    </button>
-                                </a> --}}
-                                <a href="{{ route('user.column.settings', ['id' => $user->id]) }}" class="btn btn-secondary d-flex align-items-center"><span
-                                    class="material-symbols-outlined me-2">visibility
-                                </span> View Access</a>
+                                <a href="{{ route('user.column.settings', ['id' => $role->id]) }}"
+                                    class="btn btn-secondary d-flex align-items-center me-2"><span
+                                        class="material-symbols-outlined me-2">visibility
+                                    </span><b> View Access</b></a>
+
+                                @if ($role->id === 1 || $role->id === 2)
+                                    <button class="btn btn-secondary" data-bs-toggle="modal"
+                                        data-bs-target="#deleteRole{{ $role->id }}" disabled><i
+                                            class="fas fa-trash"></i></button>
+                                @else
+                                    <button class="btn btn-secondary" data-bs-toggle="modal"
+                                        data-bs-target="#deleteRole{{ $role->id }}"><i
+                                            class="fas fa-trash"></i></button>
+                                @endif
+
+                                @include('settings.users.role-delete')
                             </div>
                         </div>
                     @endforeach

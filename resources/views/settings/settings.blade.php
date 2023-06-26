@@ -11,6 +11,7 @@
             <ul class="list-unstyled ms-3">
                 <li><a href="#">Add Catalog</a></li>
             </ul>
+            <h4><a href="{{ route('home') }}">Document</a></h4>
         </div>
         <div class="mb-3 text-center">
             <form action="{{ route('logout') }}" method="POST" class="mb-3 mx-4">
