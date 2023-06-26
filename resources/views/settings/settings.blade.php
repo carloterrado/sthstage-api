@@ -4,7 +4,7 @@
             <h4>API</h4>
             <ul class="list-unstyled ms-3">
                 <li><a href="{{ route('userManagementPage') }}">Role Management</a></li>
-                <li><a href="{{ route('users') }}">User Role</a></li>
+                <li><a href="{{ route('users') }}">Role Setting</a></li>
                 <li><a href="#">Vendor Update</a></li>
             </ul>
             <h4>Catalog</h4>
