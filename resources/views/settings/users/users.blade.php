@@ -1,5 +1,6 @@
 @extends('layouts.mainlayout')
 
+@section('title', 'Admin - Role Setting')
 @section('content')
     @include('settings.users.role-modal')
 

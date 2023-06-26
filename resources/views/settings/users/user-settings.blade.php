@@ -4,6 +4,7 @@
 
 @extends('layouts.mainlayout')
 
+@section('title', 'Admin - API Access Authorization')
 @section('content')
     <div class="d-flex">
         <div class="col-2 bg-dark text-light side-bar">

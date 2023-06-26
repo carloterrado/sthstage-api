@@ -1,5 +1,6 @@
 @extends('layouts.mainlayout')
 
+@section('title', 'Admin - Role Management')
 @section('content')
 
 @include('settings.userManagement.addUserModal')

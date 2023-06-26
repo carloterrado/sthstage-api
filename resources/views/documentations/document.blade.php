@@ -1,4 +1,6 @@
 @extends('layouts.mainlayout')
+
+@section('title', 'API Documentation')
 @section('content')
     <div class="row">
         <div class="col-2 text-light side-bar">
