@@ -2,20 +2,22 @@
 
 namespace App\Http\Controllers\V1;
 
-use App\Http\Controllers\Controller;
+use App\Models\UserRole;
 use App\Models\OauthClient;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
     public function userLogin(Request $request)
     {
-      
+
         if ($request->isMethod('post')) {
             $validator = Validator::make($request->all(), [
                 'email' => 'required',
@@ -34,7 +36,7 @@ class UserController extends Controller
             }
         }
 
-        return 'Login';
+        return response()->json(['error' => 'Invalid credentials'], Response::HTTP_UNAUTHORIZED);
     }
 
     public function getUsers()
@@ -145,22 +147,27 @@ class UserController extends Controller
             "bolt_circle_diameter_2",
         ];
 
-        $client = OauthClient::select('id', 'catalog_column_settings')->where('id', $id)->first()->toArray();
-       
+        // $client = OauthClient::select('id', 'access')->where('id', $id)->first()->toArray();
 
-        return view('settings.users.user-settings')->with(compact('client', 'columns','id'));
+
+        // return view('settings.users.user-settings')->with(compact('client', 'columns', 'id'));
+
+        $client = UserRole::select('id', 'access')->where('id', $id)->first()->toArray();
+
+
+        return view('settings.users.user-settings')->with(compact('client', 'columns', 'id'));
     }
 
     public function updateUserColumnSettings(Request $request, $id)
     {
-        
+
         try {
-          
+
             $tableColumns = Schema::getColumnListing('catalog');
             $filteredColumns = array_diff($tableColumns, $request->column);
-       
+
             OauthClient::where('id', $id)->update([
-                'catalog_column_settings' => json_encode(array_values($filteredColumns))
+                'access' => json_encode(array_values($filteredColumns))
             ]);
 
             return redirect()->route('users')->with('success_message', 'Catalog column access updated successfully!');
@@ -170,14 +177,26 @@ class UserController extends Controller
         }
     }
 
-    public function userManagementPage(){
-        $users = DB::table('users')->orderBy('created_at', 'desc')->paginate(10);
+    public function userManagementPage()
+    {
+        // $users = DB::table('users')->orderBy('created_at', 'desc')->paginate(10);
+
+        $roles = DB::table('user_roles')->where('id', '!=', null)
+            ->get()->toArray();
+
+        $users = DB::table('users')
+            ->leftJoin('user_roles', 'users.role', '=', 'user_roles.role')
+            ->select('user_roles.*', 'users.*')
+            ->orderBy('users.created_at', 'desc')
+            ->paginate(10);
+
         // dd($users);
-        return view('settings.userManagement.userManagement')->with(compact('users'));
+        return view('settings.userManagement.userManagement')->with(compact('users', 'roles'));
     }
 
-    public function addUser(Request $request){
-        // dd($request->all());
+    public function addUser(Request $request)
+    {
+
         $userData = DB::table('users')
             ->insert([
                 'firstname' => $request->firstname,
@@ -196,13 +215,16 @@ class UserController extends Controller
         return redirect()->back();
     }
 
-    public function deleteUser($id){
+    public function deleteUser($id)
+    {
         DB::table('users')->where('id', $id)->delete();
-        
+
         return redirect()->back();
     }
 
-    public function editUser(Request $request, $id){
+
+    public function editUser(Request $request, $id)
+    {
         DB::table('users')
             ->where('id', $id)
             ->update([
@@ -219,24 +241,94 @@ class UserController extends Controller
         return redirect()->back();
     }
 
-    public function showLoginForm(){
+    public function showLoginForm()
+    {
+
         return view('login.login');
     }
 
-    public function login(Request $request){
-        
+    public function login(Request $request)
+    {
+
 
         if (Auth::attempt($request->only('email', 'password'))) {
             return redirect('/users');
-        }else{
+        } else {
             return redirect('login');
         }
     }
 
 
-    public function logout(Request $request){
+    public function logout(Request $request)
+    {
         Auth::logout();
 
         return redirect('/login');
+    }
+
+    public function getRole()
+    {
+        $roles = DB::table('user_roles')->where('id', '!=', null)
+            ->get()->toArray();
+
+        return view('settings.users.users')->with(compact('roles'));
+    }
+
+    public function searchRole(Request $request)
+    {
+        $searchTerm = $request->input('search');
+
+        $roles = DB::table('user_roles')
+            ->where('id', '!=', null)
+            ->where(function ($query) use ($searchTerm) {
+                $query->where('role', 'LIKE', '%' . $searchTerm . '%');
+            })
+            ->get()
+            ->toArray();
+
+        return view('settings.users.users')->with(compact('roles'));
+    }
+
+    public function addRole(Request $request)
+    {
+
+        $roleData = DB::table('user_roles')
+            ->insert([
+                'role' => $request->role,
+                'access' => $request->access,
+            ]);
+
+        return redirect()->back();
+    }
+
+    public function deleteRole($id)
+    {
+        DB::table('user_roles')->where('id', $id)->delete();
+
+        return redirect()->back();
+    }
+
+    public function searchUser(Request $request)
+    {
+        $searchTerm = $request->input('search');
+
+        $roles = DB::table('user_roles')->where('id', '!=', null)
+            ->get()->toArray();
+
+        $searchTerm = $request->input('search');
+        
+        $users = DB::table('users')
+        ->leftJoin('user_roles', 'users.role', '=', 'user_roles.role')
+        ->select('user_roles.*', 'users.*')
+        ->where(function ($query) use ($searchTerm) {
+            $query->where(DB::raw("CONCAT(users.firstname, ' ', users.lastname)"), 'LIKE', '%' . $searchTerm . '%')
+                ->orWhere('users.email', 'LIKE', '%' . $searchTerm . '%')
+                ->orWhere('users.role', 'LIKE', '%' . $searchTerm . '%');
+        })
+        ->orderBy('users.created_at', 'desc')
+        ->paginate(10);
+    
+
+        return view('settings.userManagement.userManagement')->with(compact('users', 'roles'));
     }
 }

@@ -17,10 +17,13 @@
         <!-- Main Content -->
         <div class="col-10">
             <div class="container">
-                <h3 class="my-5">User Management</h3>
+                <h3 class="my-5">Role Management</h3>
                 <div class="row my-5">
                     <div class="col-8">
-                        <input type="text" class="form-control" placeholder="Search">
+                        <form action="{{ route('searchUser') }}" method="GET" class="d-flex">
+                            <input type="text" name="search" class="form-control me-2" placeholder="Search">
+                            <button type="submit" class="btn btn-secondary">Search</button>
+                        </form>
                     </div>
                     <div class="col-4">
                         <div class="d-flex justify-content-end">
@@ -45,9 +48,9 @@
                         @foreach($users as $user)
                         <tr>
                             <td class="text-center"><b>{{ ($users->currentPage() - 1) * $users->perPage() + $loop->iteration }}</b></td>
-                            <td class="text-center">{{ $user->firstname . ' ' . $user->lastname }}</td>
-                            <td class="text-center">{{ $user->email }}</td>
-                            <td class="text-center">{{ $user->role }}</td>
+                            <td class="text-center">{{ ucfirst(strtolower($user->firstname)) . " " .  ucfirst(strtolower($user->lastname)) }}</td>
+                            <td class="text-center">{{ strtolower($user->email) }}</td>
+                            <td class="text-center">{{ ucfirst(strtolower($user->role)) }}</td>
                             <td class="text-center">
                                 <button class="btn" data-bs-toggle="modal" data-bs-target="#editUserModal{{ $user->id }}"><i class="fas fa-pencil-alt"></i></button>
                                 @include('settings.userManagement.editUserModal')

@@ -15,6 +15,7 @@ use Lcobucci\JWT\Token\Parser;
 
 
 
+
 class CatalogController extends Controller
 {
     protected $vehicleToken;
@@ -40,7 +41,7 @@ class CatalogController extends Controller
         $tokenId = (new Parser(new JoseEncoder()))->parse($bearerToken)->claims()
             ->all()['jti'];
         $this->client = Token::find($tokenId)->client;
-        $this->excludeColumns = json_decode($this->client->catalog_column_settings);
+        $this->excludeColumns = json_decode($this->client->access);
         $this->additionalColumnsToExclude = ['updated_at', 'created_at'];
         $this->tableColumns = Schema::getColumnListing('catalog');
     }
@@ -48,7 +49,7 @@ class CatalogController extends Controller
 
     public function getWheels(Request $request)
     {
-    
+
         if ((!$request->has('wheel_diameter') && !$request->has('wheel_width')) && ($request->has('brand') || $request->has('mspn'))) {
             // return $catalog_key;
             $data = DB::table('catalog')
@@ -182,6 +183,10 @@ class CatalogController extends Controller
             ->post("https://api.ridestyler.net/Vehicle/GetMakes?Token=" . $this->vehicleToken, $requestYear)
             ->json();
 
+        if (empty($response) || !isset($response['Makes']) || empty($response['Makes'])) {
+            return response()->json(['message' => 'No Response']);
+        }
+
 
         $makes = collect($response['Makes'])->pluck('VehicleMakeName')->toArray();
 
@@ -208,6 +213,10 @@ class CatalogController extends Controller
 
         $response = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetModels?Token=" . $this->vehicleToken, $requestYear)->json();
+
+        if (empty($response) || !isset($response['Models']) || empty($response['Models'])) {
+            return response()->json(['message' => 'No Response']);
+        }
 
 
         $models = collect($response['Models'])->pluck('VehicleModelName')->toArray();
@@ -238,6 +247,10 @@ class CatalogController extends Controller
         $response = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetDescriptions?Token=" . $this->vehicleToken, $requestOption)->json();
 
+        if (empty($response) || !isset($response['Options']) || empty($response['Options'])) {
+            return response()->json(['message' => 'No Response']);
+        }
+
         $options = collect($response['Descriptions'])->pluck('TrimDescription')->flatten()->toArray();
         return response()->json(['Options' => $options]);
     }
@@ -260,33 +273,38 @@ class CatalogController extends Controller
         //get configID from getdescription endpoint using request
         $responseGetDesc = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetDescriptions?Token=" . $this->vehicleToken, $requestOption)->json();
-        $configID = [
-            'VehicleConfiguration' => collect($responseGetDesc['Descriptions'])->pluck('ConfigurationID')->implode(',')
-        ];
 
-        $getTireOptDetails = Http::withHeaders(['Content-Type' => 'application/json'])
-            ->post("https://api.ridestyler.net/Vehicle/GetTireOptionDetails?Token=" . $this->vehicleToken, $configID)->json();
+        // Check if responseGetDesc contains data
+        if (!empty($responseGetDesc['Descriptions'])) {
+            $configID = [
+                'VehicleConfiguration' => collect($responseGetDesc['Descriptions'])->pluck('ConfigurationID')->implode(',')
+            ];
 
-        $getFitments = Http::withHeaders(['Content-Type' => 'application/json'])
-            ->post("https://api.ridestyler.net/Vehicle/GetFitments?Token=" . $this->vehicleToken, $configID)->json();
+            $getTireOptDetails = Http::withHeaders(['Content-Type' => 'application/json'])
+                ->post("https://api.ridestyler.net/Vehicle/GetTireOptionDetails?Token=" . $this->vehicleToken, $configID)->json();
 
+            $getFitments = Http::withHeaders(['Content-Type' => 'application/json'])
+                ->post("https://api.ridestyler.net/Vehicle/GetFitments?Token=" . $this->vehicleToken, $configID)->json();
 
-        //for get wheel size
-        $wheelArr = [];
-        for ($i = $getFitments['Fitments'][0]['VehicleFitmentWidthMin']; $i <= $getFitments['Fitments'][0]['VehicleFitmentWidthMax']; $i += 0.5) {
-            $str = $getTireOptDetails['Details'][0]['Front']['InsideDiameter'] . 'x' . $i;
-            array_push($wheelArr, $str);
+            // Generate wheel sizes
+            $wheelArr = [];
+            for ($i = $getFitments['Fitments'][0]['VehicleFitmentWidthMin']; $i <= $getFitments['Fitments'][0]['VehicleFitmentWidthMax']; $i += 0.5) {
+                $str = $getTireOptDetails['Details'][0]['Front']['InsideDiameter'] . 'x' . $i;
+                array_push($wheelArr, $str);
+            }
+
+            $response = [
+                'Size' => [
+                    'Tires' => collect($getTireOptDetails['Details'])->pluck('Front.Size'),
+                    'Wheels' => $wheelArr,
+                ]
+            ];
+
+            return response()->json($response);
         }
 
-        $response = [
-            'Size' => [
-                'Tires' => collect($getTireOptDetails['Details'])->pluck('Front.Size'),
-                'Wheels' => $wheelArr,
-            ]
-
-        ];
-
-        return response()->json($response);
+        // No response or empty data
+        return response()->json(['message' => 'No response']);
     }
 
 
@@ -305,7 +323,7 @@ class CatalogController extends Controller
         $requestOption = [
             'Search' => $exactMatch,
         ];
-       
+
         $response = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetTireOptionDetails?Token=" . $this->vehicleToken, $requestOption)->json();
 
@@ -318,6 +336,11 @@ class CatalogController extends Controller
         $filteredSize = $details->filter(function ($detail) use ($request) {
             return $detail['full_size'] === $request->size;
         })->values();
+
+        if ($filteredSize->isEmpty()) {
+            // No response or empty data
+            return response()->json(['message' => 'No response']);
+        }
 
 
         $data = DB::table('catalog')
@@ -348,41 +371,68 @@ class CatalogController extends Controller
         //get configID from getdescription endpoint using request
         $responseGetDesc = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetDescriptions?Token=" . $this->vehicleToken, $requestOption)->json();
-        $configID = [
-            'VehicleConfiguration' => collect($responseGetDesc['Descriptions'])->pluck('ConfigurationID')->implode(',')
-        ];
+
+        if (!empty($responseGetDesc['Descriptions'])) {
+
+            $configID = [
+                'VehicleConfiguration' => collect($responseGetDesc['Descriptions'])->pluck('ConfigurationID')->implode(',')
+            ];
 
 
-        $getFitments = Http::withHeaders(['Content-Type' => 'application/json'])
-            ->post("https://api.ridestyler.net/Vehicle/GetFitments?Token=" . $this->vehicleToken, $configID)->json();
-        // return $getFitments;
+            $getFitments = Http::withHeaders(['Content-Type' => 'application/json'])
+                ->post("https://api.ridestyler.net/Vehicle/GetFitments?Token=" . $this->vehicleToken, $configID)->json();
+            // return $getFitments;
 
-        //getboltpatterns, fitments, tireoption using configID
-        $getBoltPatterns = Http::withHeaders(['Content-Type' => 'application/json'])
-            ->post("https://api.ridestyler.net/Wheel/GetBoltPatterns?Token=" . $this->vehicleToken, $configID)->json();
+            //getboltpatterns, fitments, tireoption using configID
+            $getBoltPatterns = Http::withHeaders(['Content-Type' => 'application/json'])
+                ->post("https://api.ridestyler.net/Wheel/GetBoltPatterns?Token=" . $this->vehicleToken, $configID)->json();
 
-        // return $getBoltPatterns;
+            // return $getBoltPatterns;
 
-        $getTireOptDetails = Http::withHeaders(['Content-Type' => 'application/json'])
-            ->post("https://api.ridestyler.net/Vehicle/GetTireOptionDetails?Token=" . $this->vehicleToken, $configID)->json();
+            $getTireOptDetails = Http::withHeaders(['Content-Type' => 'application/json'])
+                ->post("https://api.ridestyler.net/Vehicle/GetTireOptionDetails?Token=" . $this->vehicleToken, $configID)->json();
 
-        //get inside diameter from gettireoptiondetails
-        $insideDiameter = $getTireOptDetails['Details'][0]['Front']['InsideDiameter'];
+            //get inside diameter from gettireoptiondetails
+            $insideDiameter = $getTireOptDetails['Details'][0]['Front']['InsideDiameter'];
 
-       
 
-        $catalog = DB::table('catalog')
-            ->where('center_bore', '>=', $getFitments['Fitments'][0]['VehicleFitmentHub'])
-            ->whereBetween('wheel_width', [$getFitments['Fitments'][0]['VehicleFitmentWidthMin'], $getFitments['Fitments'][0]['VehicleFitmentWidthMax']])
-            ->whereBetween('offset', [$getFitments['Fitments'][0]['VehicleFitmentOffsetMin'], $getFitments['Fitments'][0]['VehicleFitmentOffsetMax']])
-            ->where('bolt_circle_diameter_1', '=', $getBoltPatterns['BoltPatterns'][1]['BoltPatternSpacingMM'])
-            ->where('bolt_pattern_1', '=', $getBoltPatterns['BoltPatterns'][1]['BoltPatternBoltCount'])
-            ->where('wheel_diameter', '=', $insideDiameter)
-            ->where('full_size', $request->size)
-            ->select(array_diff($this->tableColumns, array_merge($this->excludeColumns, $this->additionalColumnsToExclude)))
-            ->get();
 
-        return response()->json(['data' => $catalog]);
+            $catalog = DB::table('catalog')
+                ->where('center_bore', '>=', $getFitments['Fitments'][0]['VehicleFitmentHub'])
+                ->whereBetween('wheel_width', [$getFitments['Fitments'][0]['VehicleFitmentWidthMin'], $getFitments['Fitments'][0]['VehicleFitmentWidthMax']])
+                ->whereBetween('offset', [$getFitments['Fitments'][0]['VehicleFitmentOffsetMin'], $getFitments['Fitments'][0]['VehicleFitmentOffsetMax']])
+                ->where('bolt_circle_diameter_1', '=', $getBoltPatterns['BoltPatterns'][1]['BoltPatternSpacingMM'])
+                ->where('bolt_pattern_1', '=', $getBoltPatterns['BoltPatterns'][1]['BoltPatternBoltCount'])
+                ->where('wheel_diameter', '=', $insideDiameter)
+                ->where('full_size', $request->size)
+                ->select(array_diff($this->tableColumns, array_merge($this->excludeColumns, $this->additionalColumnsToExclude)))
+                ->get();
+
+
+
+            return response()->json(['data' => $catalog]);
+        }
+
+        return response()->json(['message' => 'No response']);
+    }
+
+    // Get location details
+    public function getLocation(Request $request)
+    {
+        if ($request->has('location_id')) {
+            $data = DB::table('store_location')
+                ->where('id', $request->get('location_id'))
+                ->get();
+        } else {
+            $data = DB::table('store_location')
+                ->get();
+        }
+
+        if ($data->isEmpty()) {
+            return response()->json(['message' => 'No Response']);
+        }
+
+        return CatalogVendorLocationResource::collection($data);
     }
 
     //Get inventory price location
@@ -406,7 +456,7 @@ class CatalogController extends Controller
             ->orderBy('created_at', 'asc')
             ->first();
 
-            
+
         $data = DB::table('inventory_feed AS i')
             ->select(
                 'i.brand',
@@ -430,25 +480,14 @@ class CatalogController extends Controller
             ->where('n.upload_id', $firstData->id)
             ->get();
 
-        return  CatalogInventoryPriceResource::make($data);
-
-
-    }
-
-
-    public function getLocation(Request $request)
-    {
-        if ($request->has('location_id')) {
-            $data = DB::table('store_location')
-                ->where('id', $request->get('location_id'))
-                ->get();
-        } else {
-            $data = DB::table('store_location')
-                ->get();
+        if ($data->isEmpty()) {
+            // No response or empty data
+            return response()->json(['message' => 'No response']);
         }
 
-        return CatalogVendorLocationResource::collection($data);
+        return  CatalogInventoryPriceResource::make($data);
     }
+
 
     public function getOrderStatus(Request $request)
     {
@@ -457,6 +496,11 @@ class CatalogController extends Controller
             ->where(['orderList.po_number' => $request->po_number, 'orderList.user_id' => $request->user_id])
             ->leftJoin('orderStatus', 'orderList.order_status_id', '=', 'orderStatus.id')
             ->get();
+
+        if ($orderStatus->isEmpty()) {
+            // No response or empty data
+            return response()->json(['message' => 'No response']);
+        }
 
         return response()->json($orderStatus);
     }
