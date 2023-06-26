@@ -26,9 +26,8 @@
                                 @endif
                                 <div class="form-group">
                                     <div class="form-check form-switch switch round">
-                                        <input class="form-check-input" value="{{ $column }}"
-                                            name="column[]"
-                                            {{ in_array($column, json_decode($client['catalog_column_settings'])) ? '' : 'checked' }}
+                                        <input class="form-check-input" value="{{ $column }}" name="column[]"
+                                            {{ in_array($column, json_decode($client['access'])) ? '' : 'checked' }}
                                             type="checkbox" role="switch">
                                         <label class="form-check-label">{{ $column }}</label>
                                     </div>
@@ -47,7 +46,7 @@
                                     <div class="form-group">
                                         <div class="form-check form-switch">
                                             <input class="form-check-input" value="{{ $column }}" name="column[]"
-                                                {{ in_array($column, json_decode($client['catalog_column_settings'])) ? '' : 'checked' }}
+                                                {{ in_array($column, json_decode($client['access'])) ? '' : 'checked' }}
                                                 type="checkbox" role="switch">
                                             <label class="form-check-label">{{ $column }}</label>
                                         </div>
@@ -70,7 +69,7 @@
                                 <div class="form-group">
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" value="{{ $column }}" name="column[]"
-                                            {{ in_array($column, json_decode($client['catalog_column_settings'])) ? '' : 'checked' }}
+                                            {{ in_array($column, json_decode($client['access'])) ? '' : 'checked' }}
                                             type="checkbox" role="switch">
                                         <label class="form-check-label">{{ $column }}</label>
                                     </div>
@@ -93,7 +92,7 @@
                             <div class="form-group">
                                 <div class="form-check form-switch">
                                     <input class="form-check-input" value="{{ $column }}" name="column[]"
-                                        {{ in_array($column, json_decode($client['catalog_column_settings'])) ? '' : 'checked' }}
+                                        {{ in_array($column, json_decode($client['access'])) ? '' : 'checked' }}
                                         type="checkbox" role="switch">
                                     <label class="form-check-label">{{ $column }}</label>
                                 </div>
@@ -116,7 +115,7 @@
                         <div class="form-group">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" value="{{ $column }}" name="column[]"
-                                    {{ in_array($column, json_decode($client['catalog_column_settings'])) ? '' : 'checked' }}
+                                    {{ in_array($column, json_decode($client['access'])) ? '' : 'checked' }}
                                     type="checkbox" role="switch">
                                 <label class="form-check-label">{{ $column }}</label>
                             </div>
@@ -139,7 +138,7 @@
                     <div class="form-group">
                         <div class="form-check form-switch">
                             <input class="form-check-input" value="{{ $column }}" name="column[]"
-                                {{ in_array($column, json_decode($client['catalog_column_settings'])) ? '' : 'checked' }}
+                                {{ in_array($column, json_decode($client['access'])) ? '' : 'checked' }}
                                 type="checkbox" role="switch">
                             <label class="form-check-label">{{ $column }}</label>
                         </div>

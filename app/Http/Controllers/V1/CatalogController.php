@@ -41,7 +41,7 @@ class CatalogController extends Controller
         $tokenId = (new Parser(new JoseEncoder()))->parse($bearerToken)->claims()
             ->all()['jti'];
         $this->client = Token::find($tokenId)->client;
-        $this->excludeColumns = json_decode($this->client->catalog_column_settings);
+        $this->excludeColumns = json_decode($this->client->access);
         $this->additionalColumnsToExclude = ['updated_at', 'created_at'];
         $this->tableColumns = Schema::getColumnListing('catalog');
     }

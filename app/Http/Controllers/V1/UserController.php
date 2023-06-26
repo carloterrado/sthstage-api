@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\V1;
 
+use App\Models\UserRole;
 use App\Models\OauthClient;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -146,7 +147,12 @@ class UserController extends Controller
             "bolt_circle_diameter_2",
         ];
 
-        $client = OauthClient::select('id', 'catalog_column_settings')->where('id', $id)->first()->toArray();
+        // $client = OauthClient::select('id', 'access')->where('id', $id)->first()->toArray();
+
+
+        // return view('settings.users.user-settings')->with(compact('client', 'columns', 'id'));
+
+        $client = UserRole::select('id', 'access')->where('id', $id)->first()->toArray();
 
 
         return view('settings.users.user-settings')->with(compact('client', 'columns', 'id'));
@@ -161,7 +167,7 @@ class UserController extends Controller
             $filteredColumns = array_diff($tableColumns, $request->column);
 
             OauthClient::where('id', $id)->update([
-                'catalog_column_settings' => json_encode(array_values($filteredColumns))
+                'access' => json_encode(array_values($filteredColumns))
             ]);
 
             return redirect()->route('users')->with('success_message', 'Catalog column access updated successfully!');
@@ -173,14 +179,24 @@ class UserController extends Controller
 
     public function userManagementPage()
     {
-        $users = DB::table('users')->orderBy('created_at', 'desc')->paginate(10);
+        // $users = DB::table('users')->orderBy('created_at', 'desc')->paginate(10);
+
+        $roles = DB::table('user_roles')->where('id', '!=', null)
+        ->get()->toArray();
+        
+        $users = DB::table('users')
+        ->leftJoin('user_roles', 'users.role', '=', 'user_roles.role')
+        ->select('user_roles.*', 'users.*')
+        ->orderBy('users.created_at', 'desc')
+        ->paginate(10);
+        
         // dd($users);
-        return view('settings.userManagement.userManagement')->with(compact('users'));
+        return view('settings.userManagement.userManagement')->with(compact('users', 'roles'));
     }
 
     public function addUser(Request $request)
     {
-        // dd($request->all());
+
         $userData = DB::table('users')
             ->insert([
                 'firstname' => $request->firstname,
@@ -207,7 +223,8 @@ class UserController extends Controller
     }
 
 
-    public function editUser(Request $request, $id){
+    public function editUser(Request $request, $id)
+    {
         DB::table('users')
             ->where('id', $id)
             ->update([
@@ -224,7 +241,8 @@ class UserController extends Controller
         return redirect()->back();
     }
 
-    public function showLoginForm(){
+    public function showLoginForm()
+    {
 
         return view('login.login');
     }
@@ -246,5 +264,32 @@ class UserController extends Controller
         Auth::logout();
 
         return redirect('/login');
+    }
+
+    public function getRole()
+    {
+        $roles = DB::table('user_roles')->where('id', '!=', null)
+            ->get()->toArray();
+    
+        return view('settings.users.users')->with(compact('roles'));
+    }
+
+    public function addRole(Request $request)
+    {
+
+        $roleData = DB::table('user_roles')
+            ->insert([
+                'role' => $request->role,
+                'access' => $request->access,
+            ]);
+
+        return redirect()->back();
+    }
+
+    public function deleteRole($id)
+    {
+        DB::table('user_roles')->where('id', $id)->delete();
+
+        return redirect()->back();
     }
 }
