@@ -1,5 +1,6 @@
 @extends('layouts.mainlayout')
 
+@section('title', 'Admin - Role Setting')
 @section('content')
     @include('settings.users.role-modal')
 
@@ -19,21 +20,12 @@
                     <h3 class="my-5">Role Setting</h3>
                     <div class="row my-5">
                         <div class="col-8">
-                            <form action="{{ route('searchRole') }}" method="GET" class="d-flex">
-                                <input type="text" name="search" class="form-control me-2" placeholder="Search">
-                                <button type="submit" class="btn btn-secondary">Search</button>
+                            <form action="{{ route('searchRole') }}" method="GET" class="d-flex" id="searchForm">
+                                <input type="text" name="search" class="form-control me-2" placeholder="Search" maxlength="20">
                             </form>
                         </div>
                         <div class="col-4">
                             <div class="d-flex justify-content-end">
-                                {{-- <a href="" class="btn btn-dark me-3 d-flex align-items-center"><span
-                                        class="material-symbols-outlined">
-                                        filter_alt
-                                    </span> FILTER</a>
-                                <button class="btn btn-dark d-flex align-items-center" type="button" data-bs-toggle="modal" data-bs-target="#addRoleModal"><span
-                                        class="material-symbols-outlined">
-                                        add
-                                    </span> ADD</button> --}}
                                 <a href="" class="btn btn-dark me-3 d-flex align-items-center">FILTER</a>
                                 <button class="btn btn-dark d-flex align-items-center" type="button" data-bs-toggle="modal"
                                     data-bs-target="#addRoleModal">ADD</button>
@@ -68,8 +60,8 @@
                         </div>
                     @endforeach
                 </div>
-
             </div>
         </div>
     </div>
 @endsection
+<script src="{{ asset('js/user.js') }}"></script>

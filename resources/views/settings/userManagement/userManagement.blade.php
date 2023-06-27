@@ -1,5 +1,6 @@
 @extends('layouts.mainlayout')
 
+@section('title', 'Admin - Role Management')
 @section('content')
 
 @include('settings.userManagement.addUserModal')
@@ -20,9 +21,8 @@
                 <h3 class="my-5">Role Management</h3>
                 <div class="row my-5">
                     <div class="col-8">
-                        <form action="{{ route('searchUser') }}" method="GET" class="d-flex">
-                            <input type="text" name="search" class="form-control me-2" placeholder="Search">
-                            <button type="submit" class="btn btn-secondary">Search</button>
+                        <form action="{{ route('searchUser') }}" method="GET" class="d-flex" id="searchForm">
+                            <input type="text" name="search" class="form-control me-2" placeholder="Search" maxlength="20">
                         </form>
                     </div>
                     <div class="col-4">
@@ -76,3 +76,4 @@
     </div>
 </div>
 @endsection
+<script src="{{ asset('js/user.js') }}"></script>
