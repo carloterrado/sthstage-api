@@ -20,6 +20,7 @@ Route::middleware('auth:api')->group(function () {
 
 
         //GET CATALOG BY VEHICLE
+        Route::get('vehicles', [CatalogController::class, 'getVehicles']);
         Route::get('vehicle/years', [CatalogController::class, 'getVehicleYear']);
         Route::get('vehicle/makes', [CatalogController::class, 'getVehicleByMakes']);
         Route::get('vehicle/models', [CatalogController::class, 'getVehicleByModels']);
