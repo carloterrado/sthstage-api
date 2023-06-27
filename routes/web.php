@@ -32,13 +32,25 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/settings', [SettingsController::class, 'showSettings']);
-    Route::get('/users', [UserController::class, 'getUsers'])->name('users');
+    // Route::get('/users', [UserController::class, 'getUsers'])->name('users');
+    Route::get('/users', [UserController::class, 'getRole'])->name('users');
+
+    //Search User
+    Route::get('/search-user', [UserController::class, 'searchUser'])->name('searchUser');
+    // Add Role
+    Route::post('/add-role', [UserController::class, 'addRole'])->name('addRole');
+    // Delete Role
+    Route::post('/delete-role/{id}', [UserController::class, 'deleteRole'])->name('deleteRole');
+     //Search Role
+     Route::get('/search-role', [UserController::class, 'searchRole'])->name('searchRole');
 
     Route::get('/user-management', [UserController::class, 'userManagementPage'])->name('userManagementPage');
     Route::post('/add-user', [UserController::class, 'addUser'])->name('addUser');
     Route::post('/delete-user/{id}', [UserController::class, 'deleteUser'])->name('deleteUser');
     Route::post('/edit-user/{id}', [UserController::class, 'editUser'])->name('editUser');
     Route::get('/users-column-settings/{id}', [UserController::class, 'showUserCatalogSettings'])->name('user.column.settings');
+    
+    
     Route::post('update-user-column-settings/{id}', [UserController::class, 'updateUserColumnSettings'])->name('update.user.column.settings');
     Route::post('settings/catalog', [SettingsController::class, 'submitCatalog'])->name('submitCatalog');
     Route::post('/logout', [UserController::class, 'logout'])->name('logout');
