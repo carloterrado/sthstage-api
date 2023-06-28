@@ -26,9 +26,9 @@
                         </form>
                     </div>
                     <div class="col-4">
-                        <div class="d-flex justify-content-end">
-                            <a href="" class="btn btn-dark me-3">FILTER</a>
-                            <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#addUserModal">ADD</button>
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="" class="btn btn-dark fw-semibold">FILTER</a>
+                            <button type="button" class="btn btn-dark fw-semibold" data-bs-toggle="modal" data-bs-target="#addUserModal">ADD</button>
                         </div>
                     </div>
                 </div>
@@ -44,6 +44,7 @@
                             <th class="text-center">Action</th>
                         </tr>
                     </thead>
+                    {{-- . --}}
                     <tbody>
                         @foreach($users as $user)
                         <tr>
