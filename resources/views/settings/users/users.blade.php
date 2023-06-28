@@ -21,7 +21,8 @@
                     <div class="row my-5">
                         <div class="col-8">
                             <form action="{{ route('searchRole') }}" method="GET" class="d-flex" id="searchForm">
-                                <input type="text" name="search" class="form-control me-2" placeholder="Search" maxlength="20">
+                                <input type="text" name="search" class="form-control me-2" placeholder="Search"
+                                    maxlength="20">
                             </form>
                         </div>
                         <div class="col-4">
@@ -40,7 +41,12 @@
                                 {{ ucfirst(strtolower($role->role)) }}
                             </div>
                             <div class="col-2 d-flex justify-content-end">
-                                <a href="{{ route('user.column.settings', ['id' => $role->id]) }}"
+                                {{-- <a href="{{ route('user.column.settings', ['id' => $role->id]) }}"
+                                    class="btn btn-secondary d-flex align-items-center me-2"><span
+                                        class="material-symbols-outlined me-2">visibility
+                                    </span><b> View Access</b></a> --}}
+
+                                <a href="{{ route('role-controller', ['id' => $role->id]) }}"
                                     class="btn btn-secondary d-flex align-items-center me-2"><span
                                         class="material-symbols-outlined me-2">visibility
                                     </span><b> View Access</b></a>

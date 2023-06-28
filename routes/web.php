@@ -41,8 +41,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/add-role', [UserController::class, 'addRole'])->name('addRole');
     // Delete Role
     Route::post('/delete-role/{id}', [UserController::class, 'deleteRole'])->name('deleteRole');
-     //Search Role
-     Route::get('/search-role', [UserController::class, 'searchRole'])->name('searchRole');
+    //Search Role
+    Route::get('/search-role', [UserController::class, 'searchRole'])->name('searchRole');
+    // Role Controller
+    Route::get('/role-controller/{id}', [UserController::class, 'roleController'])->name('role-controller');
+    // View Catalog Modal
+    Route::get('/view-catalog/{id}', [UserController::class, 'viewCatalogModal'])->name('viewCatalogModal');
 
     Route::get('/user-management', [UserController::class, 'userManagementPage'])->name('userManagementPage');
     Route::post('/add-user', [UserController::class, 'addUser'])->name('addUser');

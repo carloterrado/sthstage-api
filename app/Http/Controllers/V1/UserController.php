@@ -331,4 +331,14 @@ class UserController extends Controller
 
         return view('settings.userManagement.userManagement')->with(compact('users', 'roles'));
     }
+
+    public function roleController($id){
+        
+        $role = DB::table('user_roles')->select('id','role','access')->where('id', $id)->first();
+        $columns = Schema::getColumnListing('catalog');
+        // dd($columns);
+        // 32
+        return view('settings.users.controller')->with(compact('role', 'columns', 'id'));
+        
+    }
 }
