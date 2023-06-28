@@ -147,15 +147,30 @@ class UserController extends Controller
             "bolt_circle_diameter_2",
         ];
 
+        $endpoints = [
+            'get_tires',
+            'get_wheels',
+            'get_vehicle',
+            'get_vehicle_size',
+            'get_tires_by_vehicle',
+            'get_wheels_by_vehicle',
+            'get_location',
+            'inventory_price',
+            'get_order_status'
+        ];
+
+
+        // return view('settings.users.user-settings', compact('endpoints'));
+
         // $client = OauthClient::select('id', 'access')->where('id', $id)->first()->toArray();
 
 
         // return view('settings.users.user-settings')->with(compact('client', 'columns', 'id'));
 
-        $client = UserRole::select('id', 'access')->where('id', $id)->first()->toArray();
+        $client = UserRole::select('id', 'access', 'endpoint_access')->where('id', $id)->first()->toArray();
 
 
-        return view('settings.users.user-settings')->with(compact('client', 'columns', 'id'));
+        return view('settings.users.user-settings')->with(compact('client', 'columns', 'id', 'endpoints'));
     }
 
     public function updateUserColumnSettings(Request $request, $id)
@@ -175,6 +190,19 @@ class UserController extends Controller
             // Handle the exception, log the error, etc.
             return redirect()->back()->with('error_message', 'Failed to update catalog column access.')->withInput();
         }
+    }
+
+    public function updateUserEndpointSettings(Request $request, $id){
+
+        DB::table('user_roles')->where('id', $id)->update([
+            'endpoint_access' => $request->endpoint
+        ]);
+
+
+        
+        return redirect()->back();
+        // dd($id);
+        // dd($request->endpoint);
     }
 
     public function userManagementPage()

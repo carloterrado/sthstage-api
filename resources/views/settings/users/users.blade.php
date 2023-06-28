@@ -44,6 +44,7 @@
                                     class="btn btn-secondary d-flex align-items-center me-2"><span
                                         class="material-symbols-outlined me-2">visibility
                                     </span><b> View Access</b></a>
+                                    
 
                                 @if ($role->id === 1 || $role->id === 2)
                                     <button class="btn btn-secondary" data-bs-toggle="modal"
