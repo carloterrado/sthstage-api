@@ -41,11 +41,16 @@
                                 {{ ucfirst(strtolower($role->role)) }}
                             </div>
                             <div class="col-2 d-flex justify-content-end">
-                            
+
                                 <a href="{{ route('role-controller', ['id' => $role->id]) }}"
                                     class="btn btn-secondary d-flex align-items-center me-2 fw-medium" ><span
                                         class="material-symbols-outlined me-2">visibility
                                     </span> View Access</a>
+
+                                {{-- <a href="{{ route('user.column.settings', ['id' => $role->id]) }}"
+                                    class="btn btn-secondary d-flex align-items-center me-2 fw-medium"><span
+                                        class="material-symbols-outlined me-2">visibility
+                                    </span> View Access</a> --}}
 
                                 @if ($role->id === 1 || $role->id === 2)
                                     <button class="btn btn-secondary" data-bs-toggle="modal"
