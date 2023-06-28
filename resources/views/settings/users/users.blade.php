@@ -26,9 +26,9 @@
                             </form>
                         </div>
                         <div class="col-4">
-                            <div class="d-flex justify-content-end">
-                                <a href="" class="btn btn-dark me-3 d-flex align-items-center">FILTER</a>
-                                <button class="btn btn-dark d-flex align-items-center" type="button" data-bs-toggle="modal"
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="" class="btn btn-dark fw-semibold">FILTER</a>
+                                <button class="btn btn-dark fw-semibold" type="button" data-bs-toggle="modal"
                                     data-bs-target="#addRoleModal">ADD</button>
                             </div>
                         </div>
@@ -37,19 +37,15 @@
                     {{-- User Role --}}
                     @foreach ($roles as $role)
                         <div class="bg-white p-4 my-3 rounded-2 align-items-center d-flex justify-content-end">
-                            <div class="col">
+                            <div class="col fw-medium">
                                 {{ ucfirst(strtolower($role->role)) }}
                             </div>
                             <div class="col-2 d-flex justify-content-end">
-                                {{-- <a href="{{ route('user.column.settings', ['id' => $role->id]) }}"
-                                    class="btn btn-secondary d-flex align-items-center me-2"><span
-                                        class="material-symbols-outlined me-2">visibility
-                                    </span><b> View Access</b></a> --}}
-
+                            
                                 <a href="{{ route('role-controller', ['id' => $role->id]) }}"
-                                    class="btn btn-secondary d-flex align-items-center me-2"><span
+                                    class="btn btn-secondary d-flex align-items-center me-2 fw-medium" ><span
                                         class="material-symbols-outlined me-2">visibility
-                                    </span><b> View Access</b></a>
+                                    </span> View Access</a>
 
                                 @if ($role->id === 1 || $role->id === 2)
                                     <button class="btn btn-secondary" data-bs-toggle="modal"
