@@ -148,15 +148,15 @@ class UserController extends Controller
         ];
 
         $endpoints = [
-            'get_tires',
-            'get_wheels',
-            'get_vehicle',
-            'get_vehicle_size',
-            'get_tires_by_vehicle',
-            'get_wheels_by_vehicle',
-            'get_location',
-            'inventory_price',
-            'get_order_status'
+            'api/v1/catalog/tires',
+            'api/v1/catalog/wheels',
+            'api/v1/catalog/vehicles',
+            'api/v1/catalog/vehicle/size',
+            'api/v1/catalog/vehicle/tires',
+            'api/v1/catalog/vehicle/wheels',
+            'api/v1/catalog/location',
+            'api/v1/catalog/inventory',
+            'api/v1/catalog/order/status'
         ];
 
 
