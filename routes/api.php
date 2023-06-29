@@ -11,7 +11,7 @@ Route::post('login', [UserController::class, 'userLogin']);
 
 
 
-Route::middleware('auth:api')->group(function () {
+Route::middleware(['auth:api', 'checkEndpointAccessMiddleware'])->group(function () {
 
     Route::prefix('catalog')->group(function () {
         // GET CATALOG TIRES AND WHEELS 

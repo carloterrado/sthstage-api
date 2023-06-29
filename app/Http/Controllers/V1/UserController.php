@@ -8,10 +8,12 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\CheckEndpointAccessMiddleware;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
+
 
 class UserController extends Controller
 {
@@ -194,15 +196,14 @@ class UserController extends Controller
 
     public function updateUserEndpointSettings(Request $request, $id){
 
+        $allowedEndpoints = $request->endpoint;
+
         DB::table('user_roles')->where('id', $id)->update([
-            'endpoint_access' => $request->endpoint
+            'endpoint_access' => $allowedEndpoints
         ]);
 
 
-        
         return redirect()->back();
-        // dd($id);
-        // dd($request->endpoint);
     }
 
     public function userManagementPage()

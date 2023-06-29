@@ -46,4 +46,10 @@ class User extends Authenticatable
     {
         return $this->hasOne(OauthClient::class, 'user_id', 'id')->select('access');
     }
+
+    public function role(){
+        return $this->hasOne(UserRole::class, 'role', 'endpoint_access');
+    }
+
+    
 }

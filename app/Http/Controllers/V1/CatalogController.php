@@ -196,19 +196,24 @@ class CatalogController extends Controller
             ]
         ];
 
-        $getSelection = Http::withHeaders(['Content-Type' => 'application/json'])
+        
+
+        $getSelection1 = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/Select?Token=" . $this->vehicleToken, $requestForFeat)
             ->json();
 
 
-        $featureValue = collect($getSelection['Menu']['Options'])
-            ->map(function ($option) use ($feature) {
-                if ($option['Label'] === $feature) {
-                    return $option['Value'];
-                }
-            })
-            ->filter()
-            ->first();
+            // return $getSelection;
+        $featureValue = NULL;
+
+        foreach ($getSelection1['Menu']['Options'] as $option) {
+            if($option['Label'] === $feature) {
+                $featureValue = $option['Value'];
+                break;
+            }
+        };
+
+        // return $featureValue;
 
 
         //for config
@@ -221,19 +226,26 @@ class CatalogController extends Controller
             ]
         ];
 
-        $getSelection = Http::withHeaders(['Content-Type' => 'application/json'])
+        $getSelection2 = Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/Select?Token=" . $this->vehicleToken, $requestForConfig)
             ->json();
 
+        $configValue = NULL;
+        foreach ($getSelection2['Menu']['Options'] as $option) {
+            if($option['Label'] === $config) {
+                $configValue = $option['Value'];
+                break;
+            }
+        };
 
-        $configValue = collect($getSelection['Menu']['Options'])
-            ->map(function ($option) use ($config) {
-                if ($option['Label'] === $config) {
-                    return $option['Value'];
-                }
-            })
-            ->filter()
-            ->first();
+        // $configValue = collect($getSelection['Menu']['Options'])
+        //     ->map(function ($option) use ($config) {
+        //         if ($option['Label'] === $config) {
+        //             return $option['Value'];
+        //         }
+        //     })
+        //     ->filter()
+        //     ->first();
 
 
         $selections = [
@@ -248,6 +260,7 @@ class CatalogController extends Controller
             'Selection' => array_filter($selections)
         ];
 
+        // return $requestOption;
 
 
         $getSelection = Http::withHeaders(['Content-Type' => 'application/json'])
@@ -255,6 +268,7 @@ class CatalogController extends Controller
             ->json();
 
 
+            // return $getSelection;
         $response = [
             'Data' => [
                 collect($getSelection['Menu']['Options'])->pluck('Label')
