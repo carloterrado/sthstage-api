@@ -204,8 +204,7 @@ class UserController extends Controller
 
     public function userManagementPage()
     {
-        // $users = DB::table('users')->orderBy('created_at', 'desc')->paginate(10);
-
+        
         $roles = DB::table('user_roles')->where('id', '!=', null)
             ->get()->toArray();
 
