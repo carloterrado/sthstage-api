@@ -316,19 +316,27 @@ class UserController extends Controller
             ->get()->toArray();
 
         $searchTerm = $request->input('search');
-        
+
         $users = DB::table('users')
-        ->leftJoin('user_roles', 'users.role', '=', 'user_roles.role')
-        ->select('user_roles.*', 'users.*')
-        ->where(function ($query) use ($searchTerm) {
-            $query->where(DB::raw("CONCAT(users.firstname, ' ', users.lastname)"), 'LIKE', '%' . $searchTerm . '%')
-                ->orWhere('users.email', 'LIKE', '%' . $searchTerm . '%')
-                ->orWhere('users.role', 'LIKE', '%' . $searchTerm . '%');
-        })
-        ->orderBy('users.created_at', 'desc')
-        ->paginate(10);
-    
+            ->leftJoin('user_roles', 'users.role', '=', 'user_roles.role')
+            ->select('user_roles.*', 'users.*')
+            ->where(function ($query) use ($searchTerm) {
+                $query->where(DB::raw("CONCAT(users.firstname, ' ', users.lastname)"), 'LIKE', '%' . $searchTerm . '%')
+                    ->orWhere('users.email', 'LIKE', '%' . $searchTerm . '%')
+                    ->orWhere('users.role', 'LIKE', '%' . $searchTerm . '%');
+            })
+            ->orderBy('users.created_at', 'desc')
+            ->paginate(10);
+
 
         return view('settings.userManagement.userManagement')->with(compact('users', 'roles'));
+    }
+
+    public function roleController($id){
+        
+        $role = DB::table('user_roles')->select('id','role','access')->where('id', $id)->first();
+        $columns = Schema::getColumnListing('catalog');
+        return view('settings.users.controller')->with(compact('role', 'columns', 'id'));
+        
     }
 }

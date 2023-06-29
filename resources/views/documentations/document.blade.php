@@ -1,4 +1,6 @@
 @extends('layouts.mainlayout')
+
+@section('title', 'API Documentation')
 @section('content')
     <div class="row">
         <div class="col-2 text-light side-bar">
@@ -6,7 +8,7 @@
             @include('documentations.side-bar-button')
 
         </div>
-        <div class="col-10">
+        <div class="col-10 mt-5">
             <h1>Introduction</h1>
             <div class="divider"></div>
             <p>This documentation offers a detailed and thorough guide for developers to gain direct access to STH using an
@@ -1043,11 +1045,11 @@
                 <h3>Parameters</h3>
                 <p>mspn</p>
                 <p>brand</p>
-    
+
                 <h3>JSON</h3>
                 <p>To get a list of inventory and prices by locations that are available in the MSPN - 001770 or Brand -
                     BRIDGESTONE:</p>
-    
+
                 <div class="divider"></div>
                 <pre>
     <code class="language-json" style=" color:aqua ">

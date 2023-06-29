@@ -14,12 +14,12 @@
                         <div class="mb-3 col-lg-6">
                             <label for="firstname" class="form-label">First Name</label>
                             <input type="text" class="form-control" id="firstname" placeholder="First Name"
-                                name="firstname" value="{{ $user->firstname }}" required>
+                                name="firstname" value="{{ ucfirst(strtolower($user->firstname))}}" required>
                         </div>
                         <div class="mb-3 col-lg-6">
                             <label for="lastname" class="form-label">Last Name</label>
                             <input type="text" class="form-control" id="lastname" placeholder="Last Name"
-                                name="lastname" value="{{ $user->lastname }}" required>
+                                name="lastname" value="{{ ucfirst(strtolower($user->lastname)) }}" required>
                         </div>
                     </div>
 
@@ -27,11 +27,11 @@
                         <div class="mb-3 col-lg-6">
                             <label for="email" class="form-label">Email</label>
                             <input type="email" class="form-control" id="email" placeholder="Email" name="email"
-                                value="{{ $user->email }}" required>
+                                value="{{ strtolower($user->email) }}" required>
                         </div>
                         <div class="mb-3 col-lg-6">
                             <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" placeholder="Password"
+                            <input type="password" class="form-control" id="password" placeholder="********"
                                 name="password" required>
                         </div>
                     </div>
