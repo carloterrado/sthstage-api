@@ -13,50 +13,36 @@ class CatalogInventoryPriceResource extends JsonResource
      * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
      */
 
-    public function toArray($request)
-    {
-        $formattedData = [];
-
-        foreach ($this->resource as $data) {
-            // Check if data with the same brand and mspn already exists
-            $existingDataKey = null;
-            foreach ($formattedData as $key => $existingData) {
-                if ($existingData['brand'] === $data->brand && $existingData['part_number'] === $data->part_number) {
-                    $existingDataKey = $key;
-                    break;
-                }
-            }
-
-            if ($existingDataKey === null) {
-                // If no existing data found, create a new entry
-                $formattedData[] = [
-                    'brand' => $data->brand,
-                    'part_number' => $data->part_number,
-                    'location' => [
-                        [
-                            'store_location_id' => $data->store_location_id,
-                            'price' => $data->selling_price,
-                            'qty' => $data->qty,
-                        ],
-                    ],
-                ];
-            } else {
-                // If existing data found, append to the existing location array
-                $formattedData[$existingDataKey]['location'][] = [
-                    'store_location_id' => $data->store_location_id,
-                    'price' => $data->selling_price,
-                    'qty' => $data->qty,
-                ];
-            }
-        }
-
-        // Sort the "location" array in descending order based on "store_location_id"
-        foreach ($formattedData as &$data) {
-            usort($data['location'], function ($a, $b) {
-                return $a['store_location_id'] - $b['store_location_id'];
-            });
-        }
-
-        return $formattedData;
-    }
+     public function toArray($request)
+     {
+         $formattedData = [];
+     
+         foreach ($this->resource as $data) {
+             // Check if data with the same brand and part number already exists
+             $existingDataKey = null;
+             foreach ($formattedData as $key => $existingData) {
+                 if ($existingData['brand'] === $data->brand && $existingData['part_number'] === $data->part_number) {
+                     $existingDataKey = $key;
+                     break;
+                 }
+             }
+     
+             if ($existingDataKey === null) {
+                 // If no existing data found, create a new entry
+                 $formattedData[] = [
+                     'brand' => $data->brand,
+                     'part_number' => $data->part_number,
+                     'price' => $data->selling_price,
+                     'qty' => $data->qty,
+                 ];
+             } else {
+                 // If existing data found, update the quantity and price
+                 $formattedData[$existingDataKey]['qty'] += $data->qty;
+                 $formattedData[$existingDataKey]['price'] = $data->selling_price;
+             }
+         }
+     
+         return $formattedData;
+     }
+     
 }

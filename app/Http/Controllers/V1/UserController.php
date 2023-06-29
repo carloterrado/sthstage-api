@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\V1;
 
+use App\Models\Catalog;
 use App\Models\UserRole;
 use App\Models\OauthClient;
 use Illuminate\Http\Request;
@@ -177,21 +178,16 @@ class UserController extends Controller
 
     public function updateUserColumnSettings(Request $request, $id)
     {
-
-        try {
-
-            $tableColumns = Schema::getColumnListing('catalog');
-            $filteredColumns = array_diff($tableColumns, $request->column);
-
-            OauthClient::where('id', $id)->update([
+        $tableColumns = Schema::getColumnListing('catalog');
+        $filteredColumns = array_diff($tableColumns, $request->column);
+        DB::table('user_roles')
+            ->select('id', 'role', 'access')
+            ->where('id', $id)
+            ->update([
                 'access' => json_encode(array_values($filteredColumns))
             ]);
 
-            return redirect()->route('users')->with('success_message', 'Catalog column access updated successfully!');
-        } catch (\Exception $e) {
-            // Handle the exception, log the error, etc.
-            return redirect()->back()->with('error_message', 'Failed to update catalog column access.')->withInput();
-        }
+        return redirect()->back();
     }
 
     public function updateUserEndpointSettings(Request $request, $id){
@@ -359,5 +355,13 @@ class UserController extends Controller
 
 
         return view('settings.userManagement.userManagement')->with(compact('users', 'roles'));
+    }
+
+    public function roleController($id)
+    {
+
+        $role = DB::table('user_roles')->select('id', 'role', 'access')->where('id', $id)->first();
+        $columns = Schema::getColumnListing('catalog');
+        return view('settings.users.controller')->with(compact('role', 'columns', 'id'));
     }
 }

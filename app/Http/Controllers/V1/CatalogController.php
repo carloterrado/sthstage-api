@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\V1\CatalogInventoryPriceResource;
 use App\Http\Resources\V1\CatalogVendorLocationResource;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
@@ -280,8 +281,10 @@ class CatalogController extends Controller
     }
 
 
-    public function getVehicleYear()
+    public function getVehicleYear(Request $request)
     {
+        
+        
 
         return Http::withHeaders(['Content-Type' => 'application/json'])
             ->post("https://api.ridestyler.net/Vehicle/GetYears?Token=" . $this->vehicleToken)
@@ -291,6 +294,8 @@ class CatalogController extends Controller
 
     public function getVehicleByMakes(Request $request)
     {
+
+
 
         $request->validate([
             'year' => 'required',
@@ -563,10 +568,16 @@ class CatalogController extends Controller
     //Get inventory price location
     public function inventoryPrice(Request $request)
     {
+       
         $request->validate([
             'brand' => 'required',
-            'mspn' => 'required',
+            'part_number' => 'required'
         ]);
+
+        if(Auth::user()->role === 'Admin')
+        {
+            $request->validate(['channel' => 'required']);
+        }
 
         $bearerToken = request()->bearerToken();
 
@@ -598,10 +609,10 @@ class CatalogController extends Controller
             ->join(DB::raw('(SELECT MIN(id) as min_id FROM inventory_channel_selling_price GROUP BY brand, part_number, channel) AS sub'), function ($join) {
                 $join->on('n.id', '=', 'sub.min_id');
             })
-            ->where('i.part_number', $request->mspn)
+            ->where('i.part_number', $request->part_number)
             ->where('i.brand', $request->brand)
             // Change the default 329 value by $clientChannel variable 
-            ->where('n.channel', 329)
+            ->where('n.channel', $request->channel ? $request->channel : 329)
             ->where('n.upload_id', $firstData->id)
             ->get();
 
@@ -628,5 +639,11 @@ class CatalogController extends Controller
         }
 
         return response()->json($orderStatus);
+    }
+
+
+    public function postCatalog(Request $request)
+    {
+        
     }
 }
