@@ -56,6 +56,7 @@ Route::middleware('auth')->group(function () {
     
     
     Route::post('update-user-column-settings/{id}', [UserController::class, 'updateUserColumnSettings'])->name('update.user.column.settings');
+    Route::post('update-user-endpoint-settings/{id}', [UserController::class, 'updateUserEndpointSettings'])->name('update.user.endpoint.settings');
     Route::post('settings/catalog', [SettingsController::class, 'submitCatalog'])->name('submitCatalog');
     Route::post('/logout', [UserController::class, 'logout'])->name('logout');
 

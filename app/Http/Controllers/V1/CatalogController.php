@@ -151,6 +151,135 @@ class CatalogController extends Controller
         ], 400);
     }
 
+    public function getVehicles(Request $request)
+    {
+
+
+        $year = $request->year;
+        $make = $request->make;
+        $model = $request->model;
+        $feature = $request->feature;
+        $config = $request->config;
+
+
+        //for makes
+        $requestMakes = [
+            'Year' => $year,
+            'MakeName' => $make,
+        ];
+
+        $getMakes = Http::withHeaders(['Content-Type' => 'application/json'])
+            ->post("https://api.ridestyler.net/Vehicle/GetMakes?Token=" . $this->vehicleToken, $requestMakes)
+            ->json();
+
+        $makeID = $getMakes['Makes'][0]['VehicleMakeID'];
+
+
+        //for model
+        $requestModel = [
+            'Year' => $year,
+            'MakeName' => $make,
+            'ModelName' => $model
+        ];
+
+        $getModel = Http::withHeaders(['Content-Type' => 'application/json'])
+            ->post("https://api.ridestyler.net/Vehicle/GetModels?Token=" . $this->vehicleToken, $requestModel)->json();
+
+        $modelID = $getModel['Models'][0]['VehicleModelID'];
+
+
+        //for features
+        $requestForFeat = [
+            'Selection' => [
+                'year:' . $year,
+                'make:' . $makeID,
+                'model:' . $modelID
+            ]
+        ];
+
+        
+
+        $getSelection1 = Http::withHeaders(['Content-Type' => 'application/json'])
+            ->post("https://api.ridestyler.net/Vehicle/Select?Token=" . $this->vehicleToken, $requestForFeat)
+            ->json();
+
+
+            // return $getSelection;
+        $featureValue = NULL;
+
+        foreach ($getSelection1['Menu']['Options'] as $option) {
+            if($option['Label'] === $feature) {
+                $featureValue = $option['Value'];
+                break;
+            }
+        };
+
+        // return $featureValue;
+
+
+        //for config
+        $requestForConfig = [
+            'Selection' => [
+                'year:' . $year,
+                'make:' . $makeID,
+                'model:' . $modelID,
+                'features:' . $featureValue
+            ]
+        ];
+
+        $getSelection2 = Http::withHeaders(['Content-Type' => 'application/json'])
+            ->post("https://api.ridestyler.net/Vehicle/Select?Token=" . $this->vehicleToken, $requestForConfig)
+            ->json();
+
+        $configValue = NULL;
+        foreach ($getSelection2['Menu']['Options'] as $option) {
+            if($option['Label'] === $config) {
+                $configValue = $option['Value'];
+                break;
+            }
+        };
+
+        // $configValue = collect($getSelection['Menu']['Options'])
+        //     ->map(function ($option) use ($config) {
+        //         if ($option['Label'] === $config) {
+        //             return $option['Value'];
+        //         }
+        //     })
+        //     ->filter()
+        //     ->first();
+
+
+        $selections = [
+            $year ? 'year:' . $year : null,
+            $make ? 'make:' . $makeID : null,
+            $model ? 'model:' . $modelID : null,
+            $feature ? 'features:' . $featureValue : null,
+            $config ? 'config:' . $configValue : null
+        ];
+
+        $requestOption = [
+            'Selection' => array_filter($selections)
+        ];
+
+        // return $requestOption;
+
+
+        $getSelection = Http::withHeaders(['Content-Type' => 'application/json'])
+            ->post("https://api.ridestyler.net/Vehicle/Select?Token=" . $this->vehicleToken, $requestOption)
+            ->json();
+
+
+            // return $getSelection;
+        $response = [
+            'Data' => [
+                collect($getSelection['Menu']['Options'])->pluck('Label')
+            ]
+        ];
+
+
+        return response()->json($response);
+    }
+
 
     public function getVehicleYear(Request $request)
     {
@@ -265,11 +394,11 @@ class CatalogController extends Controller
             'model' => 'required',
             'option' => 'required',
         ]);
-
-        $exactMatch = $request->year . ' ' . $request->make . ' ' . $request->model . ' ' . $request->option;
-        $requestOption = [
-            'Search' => $exactMatch,
-        ];
+        $request->year . ' ' . $request->make . ' ' . $request->model . ' ' . $request->option;
+        $exactMatch =
+            $requestOption = [
+                'Search' => $exactMatch,
+            ];
 
         //get configID from getdescription endpoint using request
         $responseGetDesc = Http::withHeaders(['Content-Type' => 'application/json'])

@@ -11,7 +11,7 @@ Route::post('login', [UserController::class, 'userLogin']);
 
 
 
-Route::middleware('auth:api')->group(function () {
+Route::middleware(['auth:api', 'checkEndpointAccessMiddleware'])->group(function () {
 
     Route::prefix('catalog')->group(function () {
         // GET CATALOG TIRES AND WHEELS 
@@ -20,6 +20,7 @@ Route::middleware('auth:api')->group(function () {
 
 
         //GET CATALOG BY VEHICLE
+        Route::get('vehicles', [CatalogController::class, 'getVehicles']);
         Route::get('vehicle/years', [CatalogController::class, 'getVehicleYear']);
         Route::get('vehicle/makes', [CatalogController::class, 'getVehicleByMakes']);
         Route::get('vehicle/models', [CatalogController::class, 'getVehicleByModels']);

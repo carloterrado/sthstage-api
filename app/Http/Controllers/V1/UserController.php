@@ -9,10 +9,12 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\CheckEndpointAccessMiddleware;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
+
 
 class UserController extends Controller
 {
@@ -148,15 +150,30 @@ class UserController extends Controller
             "bolt_circle_diameter_2",
         ];
 
+        $endpoints = [
+            'api/v1/catalog/tires',
+            'api/v1/catalog/wheels',
+            'api/v1/catalog/vehicles',
+            'api/v1/catalog/vehicle/size',
+            'api/v1/catalog/vehicle/tires',
+            'api/v1/catalog/vehicle/wheels',
+            'api/v1/catalog/location',
+            'api/v1/catalog/inventory',
+            'api/v1/catalog/order/status'
+        ];
+
+
+        // return view('settings.users.user-settings', compact('endpoints'));
+
         // $client = OauthClient::select('id', 'access')->where('id', $id)->first()->toArray();
 
 
         // return view('settings.users.user-settings')->with(compact('client', 'columns', 'id'));
 
-        $client = UserRole::select('id', 'access')->where('id', $id)->first()->toArray();
+        $client = UserRole::select('id', 'access', 'endpoint_access')->where('id', $id)->first()->toArray();
 
 
-        return view('settings.users.user-settings')->with(compact('client', 'columns', 'id'));
+        return view('settings.users.user-settings')->with(compact('client', 'columns', 'id', 'endpoints'));
     }
 
     public function updateUserColumnSettings(Request $request, $id)
@@ -169,6 +186,18 @@ class UserController extends Controller
             ->update([
                 'access' => json_encode(array_values($filteredColumns))
             ]);
+
+        return redirect()->back();
+    }
+
+    public function updateUserEndpointSettings(Request $request, $id){
+
+        $allowedEndpoints = $request->endpoint;
+
+        DB::table('user_roles')->where('id', $id)->update([
+            'endpoint_access' => $allowedEndpoints
+        ]);
+
 
         return redirect()->back();
     }
