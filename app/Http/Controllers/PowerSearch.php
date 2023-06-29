@@ -125,11 +125,7 @@ class PowerSearch extends Controller
     public function execute(Request $request)
     {
 
-        $request->merge([
-            // 'channel' => '329ST',
-            'brand' => strtoupper($request->get('brand')),
-            'part_number' => strtoupper($request->get('part_number')),
-        ]);
+
 
         $validation = $this->validation($request);
         if (!(isset($validation['status']) && strtolower($validation['status']) == 'success')) {

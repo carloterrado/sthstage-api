@@ -37,6 +37,10 @@ Route::middleware('auth:api')->group(function () {
 
         // POST QUOTE AND ORDERING
         Route::post('quote', [OrderingController::class, 'postQuote']);
+        Route::post('ordering', [OrderingController::class, 'postOrder']);
+
+        // POST ADD CATALOG
+        Route::post('add-catalog', [CatalogController::class, 'postCatalog']);
     });
 
 
