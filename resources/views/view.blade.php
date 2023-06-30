@@ -25,6 +25,39 @@
                                     {{ session('success') }}
                                 </div>
                             @endif
+                            <!-- Column Visibility Modal -->
+                            <div class="modal fade" id="columnVisibilityModal" tabindex="-1"
+                                aria-labelledby="columnVisibilityModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="columnVisibilityModalLabel">Column Visibility</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="form-check">
+                                                @foreach ($columns as $index => $column)
+                                                    <input class="form-check-input" type="checkbox"
+                                                        id="columnCheckbox{{ $index }}" value="{{ $index }}"
+                                                        checked>
+                                                    <label class="form-check-label" for="columnCheckbox{{ $index }}">
+                                                        {{ $column }}
+                                                    </label>
+                                                    <br>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">Close</button>
+                                            <button id="applyColumnVisibilityBtn" type="button"
+                                                class="btn btn-primary">Apply</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Filter modal -->
                             <div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel"
                                 aria-hidden="true">
@@ -59,6 +92,7 @@
                                     </div>
                                 </div>
                             </div>
+                            
                             <div class="card">
                                 <div class="card-body">
                                     <div class="container mt-2">
@@ -84,10 +118,10 @@
                                                 </form>
                                             </div>
                                         </div>
-                                        <button id="filterButton" class="rounded-pill fs-6 btn btn-secondary" type="button"
-                                            style="width: 250px;">
+                                        {{-- <button id="filterButton" class="rounded-pill fs-6 btn btn-secondary"
+                                            type="button" style="width: 250px;">
                                             <i class="fa-solid fa-filter"></i> FILTER
-                                        </button>
+                                        </button> --}}
                                     </div>
                                     @if (isset($empty))
                                         <p class="text-center fs-3 mt-4">{{ $empty }}</p>
@@ -131,7 +165,9 @@
         });
 
         $(document).ready(function() {
-            $('#catalogTable').DataTable({
+            var importantColumns = [0, 1, 2]; // Define the indices of the important columns
+
+            var dataTable = $('#catalogTable').DataTable({
                 "dom": 'Bfrtip',
                 "buttons": [{
                         "extend": 'copyHtml5',
@@ -151,27 +187,69 @@
                             "columns": [0, 1, 2, 5]
                         }
                     },
-                    'colvis'
+                    {
+                        "extend": 'colvis',
+                        "text": 'Column Visibility',
+                        "className": 'btn-column-visibility'
+                    },
+                    {
+                        "text": 'Hide All',
+                        "action": function(e, dt, button, config) {
+                            dataTable.columns().visible(false);
+                        }
+                    }
                 ],
                 "scrollX": true,
                 "scrollY": "500px",
                 "initComplete": function() {
-                    this.api()
-                        .columns()
-                        .every(function() {
-                            var column = this;
-                            var title = column.header().textContent;
+                    var api = this.api();
 
-                            // Create input element and add event listener
-                            $('<input type="text" placeholder="Search ' + title + '" />')
-                                .appendTo($(column.header()))
-                                .on('keyup change clear', function() {
-                                    if (column.search() !== this.value) {
-                                        column.search(this.value).draw();
-                                    }
-                                });
-                        });
-                }
+                    // Event listener for search input
+                    api.columns().every(function() {
+                        var column = this;
+                        var title = $(column.header()).text();
+
+                        // Create input element and add event listener
+                        var input = $('<input type="text" placeholder="Search ' + title +
+                                '" />')
+                            .on('click', function(e) {
+                                e
+                            .stopPropagation(); // Prevent sorting when clicking on the input
+                            })
+                            .on('keyup change clear', function() {
+                                if (column.search() !== this.value) {
+                                    // Disable sorting before performing the search
+                                    dataTable.order([]).draw();
+
+                                    column.search(this.value).draw();
+                                }
+                            });
+
+                        // Check if the column index is in the importantColumns array
+                        if (importantColumns.includes(column.index())) {
+                            $(column.header()).addClass(
+                            'important'); // Add a class to style the important columns
+                        }
+
+                        $(column.header()).append(input);
+                    });
+                },
+                "columnDefs": [{
+                    "targets": '_all',
+                    "orderable": true // Enable sorting for all columns
+                }]
+            });
+
+            // Event listener for Column Visibility button
+            $('.btn-column-visibility').on('click', function() {
+                dataTable.colReorder
+            .reset(); // Reset column order before showing the column visibility modal
+                dataTable.colReorder.enable(); // Enable column reordering
+                dataTable.colReorder.order([0, 1, 2, 3, 4, 5, 6, 7, 8]); // Set the default column order
+                dataTable.colReorder.draw(); // Redraw the table
+
+                dataTable.buttons().colvisShow(); // Show the column visibility buttons
+                dataTable.buttons().colvisRestore(); // Restore the column visibility state
             });
         });
     </script>

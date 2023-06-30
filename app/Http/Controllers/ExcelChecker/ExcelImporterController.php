@@ -14,19 +14,27 @@ use League\CommonMark\Extension\Table\Table;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Doctrine\DBAL\Schema\AbstractSchemaManager;
 
 class ExcelImporterController extends Controller
 {
     public function index(Request $request)
     {
-        $rows = DB::table('catalog')->limit(10)->paginate(10);
+        $rows = DB::table('catalog')->limit(10)->paginate(100);
         // dd($rows);
         if (empty($rows)) {
             return view('view',  ['empty' => 'The Database is empty.']);
         } else {
-            $databaseColumnNames = Schema::getColumnListing('catalog');
+            $schemaManager = Schema::getConnection()->getDoctrineSchemaManager();
+            $tableDetails = $schemaManager->listTableDetails('catalog');
+            $databaseColumnNames = $tableDetails->getColumns();
 
-            return view('view', ['rows' => $rows, 'columns' => $databaseColumnNames]);
+            // Extract the column names from the column objects
+            $columnNames = array_map(function ($column) {
+                return $column->getName();
+            }, $databaseColumnNames);
+
+            return view('view', ['rows' => $rows, 'columns' => $columnNames]);
         }
     }
     public function Import(Request $request)
@@ -174,7 +182,7 @@ class ExcelImporterController extends Controller
         $sheet->fromArray($tableRows, null, 'A2');
 
         $writer = new Xlsx($spreadsheet);
-        $filename = 'table_export.xlsx';
+        $filename = 'Catalog.xlsx';
 
         // Save the spreadsheet to a file
         $writer->save($filename);
