@@ -20,7 +20,7 @@ class ExcelImporterController extends Controller
 {
     public function index(Request $request)
     {
-        $rows = DB::table('catalog')->limit(10)->paginate(100);
+        $rows = DB::table('catalog')->limit(50)->paginate(100);
         // dd($rows);
         if (empty($rows)) {
             return view('view',  ['empty' => 'The Database is empty.']);
@@ -162,24 +162,13 @@ class ExcelImporterController extends Controller
     {
         $hiddenColumns = $request->input('hidden_columns', []);
 
-        $table = new Catalog();
-        $visibleColumns = array_diff($table->getFillable(), $hiddenColumns);
-
-        $tableData = Catalog::select($visibleColumns)->get();
+        $table = Schema::getColumnListing('catalog');
 
         // Create a new Spreadsheet object
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        // Set the column headings
-        $columnHeadings = array_keys($tableData->first()->toArray());
-        $sheet->fromArray($columnHeadings, null, 'A1');
-
-        // Set the table data
-        $tableRows = $tableData->map(function ($row) use ($visibleColumns) {
-            return collect($row->toArray())->only($visibleColumns)->values()->all();
-        })->toArray();
-        $sheet->fromArray($tableRows, null, 'A2');
+        $sheet->fromArray($table, null, 'A1');
 
         $writer = new Xlsx($spreadsheet);
         $filename = 'Catalog.xlsx';

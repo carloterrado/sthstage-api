@@ -1,5 +1,54 @@
 @extends('layouts.mainlayout')
 @section('content')
+<style>
+    /* Active column visibility button */
+    .dt-button {
+        background-color: #6c757d;
+        color: #fff;
+        border: #6c757d; 
+    }
+    .dt-button:hover {
+        background-color: #5c636a;
+        color: #fff;
+        transition: 0.3s;
+        border: #6c757d; 
+
+    }
+
+    /* Inactive column visibility button */
+    #catalogTable_wrapper .dt-button-collection {
+        position: absolute;
+        z-index: 1;
+        background: #eee;
+        margin: 0 !important;
+        top: 40px !important;
+        padding: 10px;
+        left: 0 !important;
+    }
+
+    .dt-buttons {
+        position: relative;
+    }
+
+    #catalogTable_wrapper .dt-button-background {
+        display: none !important;
+    }
+
+
+    #catalogTable_wrapper .dt-button-collection .dt-button {
+        background: #0d6efd;
+        margin: 2px;
+        font-size: 12px;
+        width: 12%;
+        color: #fff;
+        border: 1px solid #0d6efd;
+    }
+
+    #catalogTable_wrapper .dt-button-collection .dt-button.active {
+        background: #95c0ff;
+        border: 1px solid #579bff;
+    }
+</style>
     <div class="container-fluid">
         <div class="row">
             <div class="col-2 bg-dark text-light side-bar">
@@ -25,74 +74,6 @@
                                     {{ session('success') }}
                                 </div>
                             @endif
-                            <!-- Column Visibility Modal -->
-                            <div class="modal fade" id="columnVisibilityModal" tabindex="-1"
-                                aria-labelledby="columnVisibilityModalLabel" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="columnVisibilityModalLabel">Column Visibility</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <div class="form-check">
-                                                @foreach ($columns as $index => $column)
-                                                    <input class="form-check-input" type="checkbox"
-                                                        id="columnCheckbox{{ $index }}" value="{{ $index }}"
-                                                        checked>
-                                                    <label class="form-check-label" for="columnCheckbox{{ $index }}">
-                                                        {{ $column }}
-                                                    </label>
-                                                    <br>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary"
-                                                data-bs-dismiss="modal">Close</button>
-                                            <button id="applyColumnVisibilityBtn" type="button"
-                                                class="btn btn-primary">Apply</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Filter modal -->
-                            <div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel"
-                                aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="filterModalLabel">Filter Catalog</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <!-- Add your filter form or inputs here -->
-                                            <!-- Example: -->
-                                            <div class="mb-3">
-                                                <label for="filterName" class="form-label">Name</label>
-                                                <input type="text" class="form-control" id="filterName">
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="filterCategory" class="form-label">Category</label>
-                                                <input type="text" class="form-control" id="filterCategory">
-                                            </div>
-                                            <!-- Add more filter inputs as needed -->
-
-                                        </div>
-                                        <div class="modal-footer">
-
-                                            <button type="button" class="btn btn-secondary"
-                                                data-bs-dismiss="modal">Close</button>
-                                            <button type="button" class="btn btn-primary">Apply Filter</button>
-
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
                             <div class="card">
                                 <div class="card-body">
                                     <div class="container mt-2">
@@ -126,7 +107,7 @@
                                     @if (isset($empty))
                                         <p class="text-center fs-3 mt-4">{{ $empty }}</p>
                                     @else
-                                        <table id="catalogTable" class="table table-bordered border-dark text-justify">
+                                        <table id="catalogTable" class="table table-bordered text-justify">
                                             <thead>
                                                 <tr>
                                                     @foreach ($columns as $column)
@@ -138,7 +119,8 @@
                                                 @foreach ($rows as $row)
                                                     <tr>
                                                         @foreach ($row as $value)
-                                                            <td class="text-truncate ellipsis py-3">
+                                                            <td class="text-truncate ellipsis py-3"
+                                                                style="max-width:150px;">
                                                                 {{ $value }}</td>
                                                         @endforeach
                                                     </tr>
@@ -154,6 +136,7 @@
             </div>
         </div>
     </div>
+    
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         function selectFile() {
@@ -195,12 +178,18 @@
                     {
                         "text": 'Hide All',
                         "action": function(e, dt, button, config) {
-                            dataTable.columns().visible(false);
+                            if (button.text() === 'Hide All') {
+                                dataTable.columns().visible(false);
+                                button.text('Show All');
+                            } else {
+                                dataTable.columns().visible(true);
+                                button.text('Hide All');
+                            }
                         }
                     }
                 ],
                 "scrollX": true,
-                "scrollY": "500px",
+                // "scrollY": "500px",
                 "initComplete": function() {
                     var api = this.api();
 
@@ -214,7 +203,7 @@
                                 '" />')
                             .on('click', function(e) {
                                 e
-                            .stopPropagation(); // Prevent sorting when clicking on the input
+                                    .stopPropagation(); // Prevent sorting when clicking on the input
                             })
                             .on('keyup change clear', function() {
                                 if (column.search() !== this.value) {
@@ -228,7 +217,7 @@
                         // Check if the column index is in the importantColumns array
                         if (importantColumns.includes(column.index())) {
                             $(column.header()).addClass(
-                            'important'); // Add a class to style the important columns
+                                'important'); // Add a class to style the important columns
                         }
 
                         $(column.header()).append(input);
@@ -250,6 +239,15 @@
 
                 dataTable.buttons().colvisShow(); // Show the column visibility buttons
                 dataTable.buttons().colvisRestore(); // Restore the column visibility state
+
+                // Change color of active/inactive columns
+                $('.dt-button-collection .dt-button').each(function(index) {
+                    if (dataTable.column(index).visible()) {
+                        $(this).addClass('active'); // Add 'active' class for visible columns
+                    } else {
+                        $(this).removeClass('active'); // Remove 'active' class for hidden columns
+                    }
+                });
             });
         });
     </script>
