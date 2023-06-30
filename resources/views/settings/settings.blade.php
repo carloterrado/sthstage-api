@@ -13,7 +13,7 @@
             </ul>
             <h4>Catalog</h4>
             <ul class="list-unstyled ms-3">
-                <li><a href="{{ route('catalog') }}">Add Catalog</a></li>
+                <li><a href="{{ route('view') }}">Add Catalog</a></li>
             </ul>
             <h4><a href="{{ route('home') }}">API Document</a></h4>
         </div>
