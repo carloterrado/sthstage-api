@@ -2,6 +2,12 @@
 @section('content')
     <div class="container-fluid">
         <div class="row">
+            <div class="col-2 bg-dark text-light side-bar">
+                <div class="position-absolute top-0 start-0 bg-dark text-light side-bar">
+                    <!-- Sidebar content goes here -->
+                    @include('settings.settings')
+                </div>
+            </div>
             <div class="col-10">
                 <div class="container mt-4">
                     <div class="row justify-content-center">
@@ -97,7 +103,7 @@
                                             <tbody>
                                                 @foreach ($rows as $row)
                                                     <tr>
-                                                        @foreach ($row->toArray() as $value)
+                                                        @foreach ($row as $value)
                                                             <td class="text-truncate ellipsis py-3">
                                                                 {{ $value }}</td>
                                                         @endforeach

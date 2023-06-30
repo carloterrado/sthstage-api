@@ -5,6 +5,7 @@ namespace App\Http\Controllers\ExcelChecker;
 use App\Http\Controllers\Controller;
 use App\Jobs\ExcelQueue;
 use App\Models\Catalog;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
@@ -18,12 +19,12 @@ class ExcelImporterController extends Controller
 {
     public function index(Request $request)
     {
-        $rows = Catalog::paginate(100);
+        $rows = DB::table('catalog')->limit(10)->paginate(10);
         // dd($rows);
         if (empty($rows)) {
             return view('view',  ['empty' => 'The Database is empty.']);
         } else {
-            $databaseColumnNames = Schema::getColumnListing('catalogs');
+            $databaseColumnNames = Schema::getColumnListing('catalog');
 
             return view('view', ['rows' => $rows, 'columns' => $databaseColumnNames]);
         }
