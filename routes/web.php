@@ -65,4 +65,5 @@ Route::middleware('auth')->group(function () {
     Route::get('/catalog', [ExcelImporterController::class, 'index'])->name('view');
     Route::post('/import', [ExcelImporterController::class, 'import'])->name('import');
     Route::post('/export', [ExcelImporterController::class, 'export'])->name('catalog.export');
+    Route::get('/{page}', [ExcelImporterController::class, 'getData'])->name('get.data');
 });
