@@ -15,12 +15,17 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
+use PhpOffice\PhpSpreadsheet\Style\Font;
 
 class ExcelImporterController extends Controller
 {
     public function index(Request $request)
     {
-        $rows = DB::table('catalog')->limit(50)->paginate(100);
+        $perPage = 10; // Number of rows per page
+        $page = $request->query('page', 1);
+
+        // Fetch the data from the database using pagination
+        $rows = DB::table('catalog')->paginate($perPage, ['*'], 'page', $page);
         // dd($rows);
         if (empty($rows)) {
             return view('view',  ['empty' => 'The Database is empty.']);
@@ -34,13 +39,44 @@ class ExcelImporterController extends Controller
                 return $column->getName();
             }, $databaseColumnNames);
 
-            return view('view', ['rows' => $rows, 'columns' => $columnNames]);
+            $totalRows = DB::table('catalog')->count();
+
+            // Calculate the range of rows being shown
+            $startRow = ($page - 1) * $perPage + 1;
+            $endRow = min($page * $perPage, $totalRows);
+
+            return view('view', [
+                'rows' => $rows,
+                'columns' => $columnNames,
+                'pagination' => $rows->links()->toHtml(),
+                'totalRows' => $totalRows,
+                'startRow' => $startRow,
+                'endRow' => $endRow,
+            ]);
         }
+    }
+
+    public function getData($page)
+    {
+        $perPage = 10; // Number of rows per page
+
+        // Fetch the data from the database using pagination
+        $rows = Catalog::paginate($perPage, ['*'], 'page', $page);
+
+        // Render the view and pass the data
+        $html = view('partials.rows')->with('rows', $rows)->render();
+        $pagination = $rows->links()->toHtml();
+
+        // Return the JSON response with the data and pagination links
+        return response()->json([
+            'data' => $html,
+            'pagination' => $pagination,
+        ]);
     }
     public function Import(Request $request)
     {
         set_time_limit(500);
-        ini_set('memory_limit', '10G');
+        ini_set('memory_limit', '50G');
         $request->validate([
             'excel_file' => 'required|mimes:csv,xls,xlsx'
         ]);
@@ -51,58 +87,34 @@ class ExcelImporterController extends Controller
         $spreadsheet = IOFactory::load($filePath);
         $worksheet = $spreadsheet->getActiveSheet();
 
-        $rowCount = $worksheet->getHighestRow();
-        $batchChunks = [];
+        $rows = $worksheet->toArray();
+        $highestRow = $rows[0];
+        $sliceHighestRow = array_slice($rows, 1);
+        $collection = collect($highestRow);
 
-        if ($rowCount <= 1000) {
-            // If the total row count is less than or equal to 1000, use the single chunk file
-            $tempFilePath = 'excel_chunks/' . uniqid('excel_chunk_') . '.xlsx';
+        $dataIndexNames = $collection->values()->toArray();
+        $dataIndexNamesString = implode(', ', $dataIndexNames);
+        // dd($dataIndexNamesString);
 
-            // Save the original file as a temporary chunk file
-            $file->move(storage_path('app/' . 'excel_chunks'), $tempFilePath);
+        $databaseColumnNames = Schema::getColumnListing('catalogs');
+        array_shift($databaseColumnNames);
+        $indexNamesString = implode(', ', $databaseColumnNames);
+        // dd($indexNamesString);
 
-            $batchChunks[] = storage_path('app/' . $tempFilePath);
-        } else {
-            // Split the data into chunks if the row count is greater than 1000
-            for ($batchIndex = 1; $batchIndex <= ceil($rowCount / 10); $batchIndex++) {
-                $currentBatchChunks = [];
+        $areColumnsEqual = ($dataIndexNamesString === $indexNamesString);
+        // dd($areColumnsEqual);
 
-                for ($chunkIndex = 1; $chunkIndex <= 10; $chunkIndex++) {
-                    $currentChunkIndex = ($batchIndex - 1) * 10 + $chunkIndex;
-
-                    if ($currentChunkIndex > 200) {
-                        break;
-                    }
-
-                    $chunkSpreadsheet = new Spreadsheet();
-                    $chunkWorksheet = $chunkSpreadsheet->getActiveSheet();
-
-                    // Set the headers in the first row of each chunk
-                    $headers = $worksheet->rangeToArray('A1:' . $worksheet->getHighestColumn() . '1', null, true, false);
-                    $chunkWorksheet->fromArray($headers[0], null, 'A1');
-
-                    // Set the rows for the current chunk
-                    $startRow = ($currentChunkIndex - 1) * ceil($rowCount / 10) + 2;
-                    $endRow = min($startRow + ceil($rowCount / 10) - 1, $rowCount);
-                    $rows = $worksheet->rangeToArray('A' . $startRow . ':' . $worksheet->getHighestColumn() . $endRow, null, true, false);
-                    $chunkWorksheet->fromArray($rows, null, 'A2');
-
-                    // Save the chunk as a temporary file
-                    $tempFilePath = 'excel_chunks/' . uniqid('excel_chunk_') . '.xlsx';
-                    $writer = IOFactory::createWriter($chunkSpreadsheet, 'Xlsx');
-                    $writer->save(storage_path('app/' . $tempFilePath));
-
-                    $currentBatchChunks[] = storage_path('app/' . $tempFilePath);
-                }
-
-                $batchChunks[] = $currentBatchChunks;
-
-                ExcelQueue::dispatch($currentBatchChunks);
-            }
+        if (!$areColumnsEqual) {
+            return redirect()->back()->with(['error' => 'There is error in the column header']);
         }
+        $temporaryPath = 'excel_chunks/' . $file->getClientOriginalName();
+        Storage::disk('local')->put($temporaryPath, file_get_contents($file));
+
+        ExcelQueue::dispatch($temporaryPath)->onQueue('imports');
 
         return redirect()->back()->with(['success' => 'File is importing']);
     }
+
 
     private function importBatchChunks($batchChunks)
     {
@@ -146,34 +158,50 @@ class ExcelImporterController extends Controller
         }
     }
 
-
-    private function validateRequiredColumns($data, $requiredColumns, $chunkPath)
-    {
-        foreach ($requiredColumns as $column) {
-            if (empty($data[$column])) {
-                return false;
-            }
-        }
-        Storage::delete($chunkPath);
-        return redirect()->back()->with(['error' => 'Excel is not match from database columns']);
-    }
-
     public function export(Request $request)
     {
         $hiddenColumns = $request->input('hidden_columns', []);
 
-        $table = Schema::getColumnListing('catalog');
+        $table = new Catalog();
+        $visibleColumns = array_diff($table->getFillable(), $hiddenColumns);
 
+        // Get the column headings from the database (excluding "id" column)
+        $schemaManager = Schema::getConnection()->getDoctrineSchemaManager();
+        $tableDetails = $schemaManager->listTableDetails('catalog');
+        $databaseColumnNames = $tableDetails->getColumns();
+
+        // Extract the column names from the column objects
+        $columnNames = array_map(function ($column) {
+            return $column->getName();
+        }, $databaseColumnNames);
+        $columnHeadings = array_filter($columnNames, function ($column) {
+            return $column !== 'id';
+        });
         // Create a new Spreadsheet object
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        $sheet->fromArray($table, null, 'A1');
+        // Set the column headings
+        $sheet->fromArray([$columnHeadings], null, 'A1');
 
-        $writer = new Xlsx($spreadsheet);
-        $filename = 'Catalog.xlsx';
+        // Set dropdown filters and bold font for column headings
+        $lastColumnLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count($columnHeadings));
+        $filterRange = 'A1:' . $lastColumnLetter . '1';
+        $sheet->setAutoFilter($filterRange);
+
+        $boldFont = new Font();
+        $boldFont->setBold(true);
+        $sheet->getStyle($filterRange)->getFont()->setBold(true);
+
+        // Set the width of the columns
+        foreach (range('A', $lastColumnLetter) as $column) {
+            $sheet->getColumnDimension($column)->setAutoSize(true);
+        }
+
+        $filename = 'Catalog Template.xlsx';
 
         // Save the spreadsheet to a file
+        $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
         $writer->save($filename);
 
         // Download the spreadsheet

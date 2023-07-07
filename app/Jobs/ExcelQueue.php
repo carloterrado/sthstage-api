@@ -11,29 +11,25 @@ use Illuminate\Queue\SerializesModels;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\Console\Helper\ProgressBar;
+use Symfony\Component\Console\Output\ConsoleOutput;
+use Illuminate\Support\Facades\Log;
 
 class ExcelQueue implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    
-    public $tries = 3;
 
     /**
      * The path of the batch chunks.
      *
      * @var array
      */
-    protected $batchChunks;
+    protected $temporaryPath;
 
-    /**
-     * Create a new job instance.
-     *
-     * @param  array  $batchChunks
-     * @return void
-     */
-    public function __construct(array $batchChunks)
+    public function __construct($temporaryPath)
     {
-        $this->batchChunks = $batchChunks;
+        $this->temporaryPath = $temporaryPath;
     }
 
     /**
@@ -43,45 +39,41 @@ class ExcelQueue implements ShouldQueue
      */
     public function handle()
     {
-        ini_set('memory_limit', '10G');
+        ini_set('memory_limit', '50G');
+        ini_set('post_max_size', '1000G');
+        ini_set('upload_max_filesize', '1000G');
 
-        foreach ($this->batchChunks as $chunkPath) {
-            $chunkSpreadsheet = IOFactory::load($chunkPath);
-            $chunkWorksheet = $chunkSpreadsheet->getActiveSheet();
-            $requiredColumns = ['brand', 'category'];
+        $temporaryPath = $this->temporaryPath;
+        $filePath = storage_path('app/' . $temporaryPath);
 
-            $rows = $chunkWorksheet->toArray();
-            $headerRow = array_shift($rows); // Remove the header row from the rows array
+        $spreadsheet = IOFactory::load($filePath);
+        $worksheet = $spreadsheet->getActiveSheet();
+        $requiredColumns = ['brand'];
 
-            foreach ($rows as $row) {
-                $data = array_combine($headerRow, $row);
-                if ($this->validateRequiredColumns($data, $requiredColumns)) {
-                    $existingRow = Catalog::where('brand', $data['brand'])
-                        ->where('mspn', $data['mspn'])
-                        ->first();
+        $rows = $worksheet->toArray();
+        $headerRow = array_shift($rows); // Remove the header row from the rows array
 
-                    if ($existingRow) {
-                        // Row already exists in the database
-                        $shouldUpdate = false;
-                        foreach ($requiredColumns as $column) {
-                            if ($data[$column] != $existingRow->$column) {
-                                // Updated data found in one of the required columns, update the row
-                                $shouldUpdate = true;
-                                break;
-                            }
-                        }
-                        if (!$shouldUpdate) {
-                            // No updates found in required columns, skip this row
-                            continue;
-                        }
-                    }
+        $progressOutput = new ConsoleOutput();
+        $progressBar = new ProgressBar($progressOutput, count($rows));
+        $progressBar->setFormat('debug');
+        $progressBar->start();
 
-                    $primaryKey = ['brand' => $data['brand'], 'mspn' => $data['mspn']];
-                    Catalog::updateOrCreate($primaryKey, $data);
-                }
+        foreach ($rows as $row) {
+            $data = array_combine($headerRow, $row);
+            if ($this->validateRequiredColumns($data, $requiredColumns)) {
+                $primaryKey = ['brand' => $data['brand'], 'mspn' => $data['mspn']];
+                Catalog::updateOrCreate($primaryKey, $data);
             }
-            File::delete($chunkPath);
+
+            $progressBar->advance();
+            Log::info('Progress: ' . $progressBar->getProgress());
         }
+
+        $progressBar->finish();
+        $progressOutput->writeln('');
+
+        Storage::disk('local')->delete($temporaryPath);
+        // throw new \Exception('Excel Imported Successfully');
     }
 
     /**

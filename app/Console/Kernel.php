@@ -15,7 +15,15 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        $schedule->command('queue:work --queue=imports')
+            ->everyMinute()
+            ->withoutOverlapping()
+            ->runInBackground();
+
+        // $schedule->command('queue:work --queue=chunkFile')
+        //     ->everyMinute()
+        //     ->withoutOverlapping()
+        //     ->runInBackground();
     }
 
     /**
